@@ -1,17 +1,22 @@
 import csv
 import glob
+import os
+from Modules import RTS27_DB_Writer_Module, RTS27_Table_Records_Module, RTS27_Utilities
 
 hsbc_source_path = "/Users/sarthakagarwal/PycharmProjects/MifidDataAnalyser/Source/Citi/UnZippedSource"
 filenames = sorted(glob.glob(hsbc_source_path+'/SI_*.csv'))
+rtsdb = RTS27_DB_Writer_Module.RTS27_DB_Writer()
 
-#filenames = filenames[0:len(filenames)
-filenames = filenames[0:100]
+#filenames = filenames[0:100]
+
+table_switches = RTS27_Utilities.RTS27_TableSwitches("N","N","N","Y") #Table 1, Table 2, Table 3, and Table 4
 
 print ("Array Length is" + str(len(filenames)))
 fileId = 0
-for f in filenames:
+for filename in filenames:
    fileId = fileId + 1
-   fileIdString = "CITI" + "_" + str(fileId)
+   source_firm_name="CITI"
+   fileIdString = source_firm_name + "_" + str(fileId)
    #print("Processing file" + f)
 
    # Table1 properties
@@ -34,18 +39,18 @@ for f in filenames:
    table1_outagesaverageduration = ""
 
    # Table 2 properties
-   table2_isin =""
-   table2_instrumentname = ""
-   table2_instrumentclassification = ""
-   table2_currency = ""
+   table2_rec = RTS27_Table_Records_Module.RTS27_Table2()
+   #table2_isin =""
+   #table2_instrumentname = ""
+   #table2_instrumentclassification = ""
+   #table2_currency = ""
 
    # Table 4 properties
-   table4_simpleavgtransactionprice = 0
-   table4_volumeweightedtransactionprice = 0
-   table4_highestexecutedprice = 0
-   table4_lowestexecutedprice = 0
+   table4_rec_new = RTS27_Table_Records_Module.RTS27_Table4()
 
    # Table 6 properties
+   table6_rec = RTS27_Table_Records_Module.RTS27_Table6()
+
    table6_numberofordersorrequest = ""
    table6_numberoftransactionsexecuted = ""
    table6_totalvalueoftransactionsexecuted = ""
@@ -53,7 +58,7 @@ for f in filenames:
    table6_numberoforderorrequestmodified = ""
    table6_mediantransactionsize = ""
 
-   with open(f) as csvfile:
+   with open(filename) as csvfile:
        readCSV = csv.reader(csvfile, delimiter=',')
        for row in readCSV:
            #print(row)
@@ -88,57 +93,95 @@ for f in filenames:
                     table1_marketsegement = row[8]
 
                 # Populate Table2 properties
-                if (row[7] == "Instrument Identifier (ISO 6166):" ):
-                    table2_isin = row[8]
+                table2_rec.setSourceCompanyName(source_firm_name)
+                table2_rec.setFileName(os.path.basename(filename))
+                table2_rec.setTradeDate(table1_dateofthetradingday)
 
-                if (row[7] == "Instrument Name:" ):
-                    table2_instrumentname = row[8]
+                if ("Instrument Identifier (ISO 6166):" in row[7] ):
+                    table2_rec.setISIN(row[8])
 
-                if (row[7] == "Instrument Classification (ISO 10962 CFI Code):"):
-                    table2_instrumentclassification = row[8]
+                if ("Instrument Name:"  in row[7] ):
+                    table2_rec.setInstrumentName(row[8])
 
-                if (row[7] == "Currency (ISO 4217):"):
-                    table2_currency = row[8]
+                if ("Instrument Classification (ISO 10962 CFI Code):" in row[7]):
+                    table2_rec.setInstrumentClassification(row[8])
+
+                if ("Currency (ISO 4217):" in row[7]):
+                    table2_rec.setCurrency(row[8])
+
+                table2_rec.setFileId(source_firm_name + "_" + table2_rec.ISIN)
 
                 # Populate Table4 properties
+                table4_rec_new.SOURCE_COMPANY_NAME = source_firm_name
+                table4_rec_new.FILENAME = os.path.basename(filename)
+                table4_rec_new.TRADE_DATE = table1_dateofthetradingday
+                table4_rec_new.FILE_ID = fileIdString
+                table4_rec_new.INSTRUMENT_NAME = table2_rec.INSTRUMENT_NAME
+                table4_rec_new.ISIN = table2_rec.ISIN
+                table4_rec_new.CURRENCY = table2_rec.CURRENCY
+
                 if (row[7] == "Simple average transaction price" ):
-                    table4_simpleavgtransactionprice = row[8]
+                    table4_rec_new.setSimpleAverageTransactionPrice(row[8])
 
                 if (row[7] == "Volume-weighted transaction price" ):
-                    table4_volumeweightedtransactionprice = row[8]
+                    table4_rec_new.setVolumeWeightedTransactionPrice(row[8])
 
                 if (row[7] == "Highest executed price" ):
-                    table4_highestexecutedprice = (row[8])
+                    table4_rec_new.setHighestExecutedPrice((row[8]))
 
                 if (row[7] == "Lowest executed price" ):
-                    table4_lowestexecutedprice = row[8]
+                    table4_rec_new.setLowestExecutedPrice(row[8])
 
                 # Populate Table 6 properties
-                if (row[7] == "Number Of Order or Request for Quotes" ):
-                    table6_numberofordersorrequest = row[8]
-                if (row[7] == "Number Of Transactions Executed"):
-                    table6_numberoftransactionsexecuted = row[8]
-                if (row[7] == "Total Value of Transactions Executed"):
-                    table6_totalvalueoftransactionsexecuted = row[8]
-                if (row[7] == "Number Of Order or Request Cancelled/Withdrawn"):
-                    table6_numberoftransactionscancelledorwithdrawn = row[8]
-                if (row[7] == "Number Of Order or Request Modified"):
-                    table6_numberoforderorrequestmodified = row[8]
-                if (row[7] == "Median Transaction Size"):
-                    table6_mediantransactionsize = row[8]
+                table6_rec.setSourceCompanyName(source_firm_name)
+                table6_rec.setFileId(source_firm_name + "_" + table2_rec.ISIN)
+                table6_rec.setFileName(os.path.basename(filename))
+                table6_rec.setTradeDate(table1_dateofthetradingday)
+                table6_rec.setISIN(table2_rec.ISIN)
+                table6_rec.setCurrency(table2_rec.CURRENCY)
+                table6_rec.setInstrumentName(table2_rec.INSTRUMENT_NAME)
+                if ("Number Of Order or Request for Quotes" in row[7]):
+                    table6_rec.setNumerOfOrderOrRequestForQuote(row[8])
 
+                if ("Number Of Transactions Executed" in row[7]):
+                    table6_rec.setNumberOfTransactionsExecuted(row[8])
 
-   # Printing output of Table 1
-   print("CITI" + ";" + fileIdString + ";" + table2_isin + ";" + table1_dateofthetradingday + ";" + table1_investmentFirm + ";" + table1_dateProduced + ";" + table1_venuename + ";" + table1_venue + ";" + table1_countryofthecompetentauthority + ";" + table1_marketsegementmic + ";" + table1_marketsegement)
+                if ("Total Value of Transactions Executed" in row[7]): # the space here is quite important !!
+                    table6_rec.setTotalValueOfTransactionsExecuted(row[8])
 
-   # Printing output of Table 2
-   print("CITI" + ";" + fileIdString + ";" + table2_isin + ";" + table1_dateofthetradingday + ";" + table1_venue + ";" + table2_instrumentname + ";" + table2_instrumentclassification + ";" + table2_currency)
+                if ("Number Of Order or Request Cancelled/Withdrawn" in row[7]):
+                    table6_rec.setNumberOfOrdersOrRequestCancelledOrWithdrawn(row[8])
 
-   # Printing output of Table 4
-   print("CITI" + ";" + fileIdString + ";" + table2_isin + ";" + table1_dateofthetradingday + ";" + table1_venue + ";" + str(table4_simpleavgtransactionprice) + ";" + str(table4_volumeweightedtransactionprice) + ";" + str(table4_highestexecutedprice) + ";" + str(table4_lowestexecutedprice))
+                if ("Number Of Order or Request Modified" in row[7]):
+                    table6_rec.setNumberOfOrdersOrRequestModified(row[8])
 
-   # Printing output of Table 6
-   print("CITI" + ";" + fileIdString + ";" + table2_isin + ";" + table1_dateofthetradingday + ";" + table1_venue + ";" + table6_numberofordersorrequest + ";" + table6_numberoftransactionsexecuted + ";" + table6_totalvalueoftransactionsexecuted + ";" + table6_numberoftransactionscancelledorwithdrawn + ";" + table6_numberoforderorrequestmodified + ";" + table6_mediantransactionsize + ";"+ table2_currency)
+                if ("Median Transaction Size" in row[7]):
+                    table6_rec.setMedianTransactionSize(row[8])
+
+                if ("Median Size of All Order or request for quotes" in row[7]):
+                    table6_rec.setMedianSizeOfAllOrdersOrRequestsForQuote(row[8])
+
+                if ("Number of Designated Market Maker" in row[7]):
+                    table6_rec.setNumberOfDesignatedMarketMaker(row[8])
+
+       # Printing output of Table 1
+       if(table_switches.PROCESS_TABLE_1 == "Y"):
+            print("CITI" + ";" + fileIdString + ";" + table2_isin + ";" + table1_dateofthetradingday + ";" + table1_investmentFirm + ";" + table1_dateProduced + ";" + table1_venuename + ";" + table1_venue + ";" + table1_countryofthecompetentauthority + ";" + table1_marketsegementmic + ";" + table1_marketsegement)
+
+       # Printing output of Table 2
+       if(table_switches.PROCESS_TABLE_2 == "Y"):
+            print (table2_rec.getAttrArray())
+            rtsdb.Write_to_Table2(table2_rec)
+
+       # Printing output of Table 4
+       if(table_switches.PROCESS_TABLE_4 == "Y"):
+            rtsdb.Write_to_Table4(table4_rec_new)
+
+       # Printing output of Table 6
+       if(table_switches.PROCESS_TABLE_6 == "Y"):
+            # print (table6_rec.getAttrArray())
+            rtsdb.Write_to_Table6(table6_rec)
+            #print("CITI" + ";" + fileIdString + ";" + table2_isin + ";" + table1_dateofthetradingday + ";" + table1_venue + ";" + table6_numberofordersorrequest + ";" + table6_numberoftransactionsexecuted + ";" + table6_totalvalueoftransactionsexecuted + ";" + table6_numberoftransactionscancelledorwithdrawn + ";" + table6_numberoforderorrequestmodified + ";" + table6_mediantransactionsize + ";"+ table2_currency)
 
 
 

@@ -15,29 +15,37 @@ class RTS27_DB_Writer:
 
         self.list_of_table2_records = []
         self.list_of_table6_records = []
+        self.list_of_table4_records = []
         print ('RTS27_DB_WRITER:INIT:Connection Success')
 
     def __del__(self):
         print ('RTS27_DB_WRITER:INIT:Calling destructor')
         if (len(self.list_of_table2_records)!=0):
-            print ("still something left in the kitty... ")
+            print ("Some table2 records left..")
             # Insert Batch
             batch = []
             for rec in self.list_of_table2_records:
-                #single_record_array = [rec.SOURCE_COMPANY_NAME, rec.FILENAME, rec.FILE_ID, rec.ISIN, rec.TRADE_DATE,
-                #                       rec.VENUE, rec.INSTRUMENT_NAME, rec.INSTRUMENT_CLASSIFICATION, rec.CURRENCY]
-                batch.append(rec.getAttrArray)
+                batch.append(rec.getAttrArray())
             self.Write_to_Table2_DB(batch)
             self.list_of_table2_records = []
 
         if (len(self.list_of_table6_records)!=0):
-            print ("SOme table6 records left..")
+            print ("Some table6 records left..")
             # Insert Batch
             table6_batch = []
             for table6_rec in self.list_of_table6_records:
                 table6_batch.append(table6_rec.getAttrArray())
             self.Write_to_Table6_DB(table6_batch)
             self.list_of_table6_records = []
+
+        if (len(self.list_of_table4_records)!=0):
+            print ("Some table4 records left..")
+            # Insert Batch
+            table4_batch = []
+            for table4_rec in self.list_of_table4_records:
+                table4_batch.append(table4_rec.getAttrArray())
+            self.Write_to_Table4_DB(table4_batch)
+            self.list_of_table4_records = []
 
         self.connection.close()
 
@@ -48,7 +56,6 @@ class RTS27_DB_Writer:
             # Insert Batch
             batch = []
             for rec in self.list_of_table2_records:
-                #single_record_array = [rec.SOURCE_COMPANY_NAME, rec.FILENAME,rec.FILE_ID, rec.ISIN, rec.TRADE_DATE, rec.VENUE, rec.INSTRUMENT_NAME, rec.INSTRUMENT_CLASSIFICATION, rec.CURRENCY ]
                 single_record_array = rec.getAttrArray()
                 batch.append(single_record_array)
             self.Write_to_Table2_DB(batch)
@@ -64,10 +71,29 @@ class RTS27_DB_Writer:
         #self.cursor.execute(insert_rts27__table2_sql_string, (publishing_firm_name, filename, fileIdString, table2_isin, table2_dateofthetradingday, table2_venue, table2_instrumentname, table2_instrumentclassification,table2_currency))
         self.cursor.executemany(insert_rts27__table2_sql_string, batch)
         self.connection.commit()
-        #print(publishing_firm_name + ";" + fileIdString + ";" + table2_isin + ";" + table2_dateofthetradingday + ";" + table2_venue + ";" + table2_instrumentname + ";" + table2_instrumentclassification + ";" + table2_currency)
         return;
 
 # Write data to RTS27 Table 4
+    def Write_to_Table4(self, table_4_record):
+        self.list_of_table4_records.append(table_4_record)
+        if (len(self.list_of_table4_records) == self.BATCH_SIZE) :
+            # Insert Batch
+            batch = []
+            for rec in self.list_of_table4_records:
+                batch.append(rec.getAttrArray())
+            self.Write_to_Table4_DB(batch)
+            self.list_of_table4_records = []
+
+    def Write_to_Table4_DB(self, batch):
+
+        insert_rts27__table4_sql_string = "INSERT INTO `MIFID_RTS27_TABLE4` (`SOURCE_COMPANY_NAME`, `FILENAME`,`FILE_ID`,`ISIN`,`TRADE_DATE`," \
+                                              "`INSTRUMENT_NAME`,`SIMPLE_AVERAGE_TRANSACTION_PRICE`,`VOLUME_WEIGHTED_TRANSACTION_PRICE`," \
+                                              "`HIGHEST_EXECUTED_PRICE`,`LOWEST_EXECUTED_PRICE`,`CURRENCY`)" \
+                                              " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s )"
+
+        self.cursor.executemany(insert_rts27__table4_sql_string, batch)
+        self.connection.commit()
+        return;
 
 # Write data to RTS27 Table 6
     def Write_to_Table6(self, table_6_record):

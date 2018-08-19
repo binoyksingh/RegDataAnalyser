@@ -15,7 +15,7 @@ for root, dirnames, filenames in os.walk(bnymellon_source_path):
     for filename in fnmatch.filter(filenames, '*.xlsx'):
         bnymellonfilenames.append(os.path.join(root, filename))
 
-#bnymellonfilenames = bnymellonfilenames[0:3]
+bnymellonfilenames = bnymellonfilenames[0:3]
 source_firm_name = "BNYMellon"
 
 print ("Array Length is" + str(len(bnymellon_source_path)))
@@ -49,10 +49,28 @@ for filename in bnymellonfilenames:
                                                                  table2_isin, table2_dateofthetradingday, table2_venue,
                                                                  table2_instrumentname, table2_instrumentclassification,
                                                                  table2_currency)
-            # print table2_rec.getAttrArray()
-            # Writing to Table 2
-            #rtsdb.Write_to_Table2(table2_rec)
 
+            # -----------------------------------------------------------
+            # Building Table 4
+            table4_rec_new = RTS27_Table_Records_Module.RTS27_Table4()
+            table4_rec_new.SOURCE_COMPANY_NAME = source_firm_name
+            table4_rec_new.FILENAME = filename
+            table4_rec_new.TRADE_DATE = formatted_date
+            table4_rec_new.FILE_ID = table2_fileIdString
+            table4_rec_new.INSTRUMENT_NAME = table2_instrumentname
+            table4_rec_new.ISIN = table2_isin
+            table4_rec_new.CURRENCY = table2_currency
+
+            if (wsheet.cell(row=rowcount + 24, column=2).value is not None):
+                table4_rec_new.SIMPLE_AVERAGE_TRANSACTION_PRICE = str(wsheet.cell(row=rowcount + 24, column=2).value)
+            if (wsheet.cell(row=rowcount + 25, column=2).value is not None):
+                table4_rec_new.VOLUME_WEIGHTED_TRANSACTION_PRICE = str(wsheet.cell(row=rowcount + 25, column=2).value)
+            if (wsheet.cell(row=rowcount + 26, column=2).value is not None):
+                table4_rec_new.HIGHEST_EXECUTED_PRICE = str(wsheet.cell(row=rowcount + 26, column=2).value)
+            if (wsheet.cell(row=rowcount + 27, column=2).value is not None):
+                table4_rec_new.LOWEST_EXECUTED_PRICE = str(wsheet.cell(row=rowcount + 27, column=2).value)
+
+            # -----------------------------------------------------------
             # Building Table 6
             table6_rec_new = RTS27_Table_Records_Module.RTS27_Table6()
             table6_rec_new.SOURCE_COMPANY_NAME = source_firm_name
@@ -85,24 +103,16 @@ for filename in bnymellonfilenames:
             if (wsheet.cell(row=rowcount+37 , column=2).value is not None ) :
                 table6_rec_new.NUMBER_OF_DESIGNATED_MARKET_MAKER = str(wsheet.cell(row=rowcount+37 , column=2).value)
 
-            # Writing output of Table 6
-            # Create structure
-            #table6_rec = RTS27_Table_Records_Module.setAttributes(source_firm_name, filename, table6_fileIdString,
-            #                                                    table6_isin, table6_dateofthetradingday,
-            #                                                     table6_instrumentname,
-            #                                                     table6_numberofordersorrequestforquotes,
-            #                                                     table6_numberoftransactionsexecuted,
-            #                                                     table6_totalvalueoftransactionsexecuted,
-            #                                                     table6_numberoftransactionscancelledorwithdrawn,
-            #                                                     table6_numberoforderorrequestmodified,
-            #                                                     table6_mediantransactionsize,
-            #                                                     table6_mediansizeofallordersorrequestsforquote,
-            #                                                     table6_numberofdesignatedmarketmakers, table6_currency)
-            print (table6_rec_new.getAttrArray())
-            rtsdb.Write_to_Table6(table6_rec_new)
+            # print table2_rec.getAttrArray()
+            # Writing to Table 2 to Database
+            # rtsdb.Write_to_Table2(table2_rec)
 
-            # RowJump
-            # rowcount = rowcount + 36
+            print table4_rec_new.getAttrArray()
+            # Writing to Table 4 to Database
+            rtsdb.Write_to_Table4(table4_rec_new)
 
+            # print (table6_rec_new.getAttrArray())
+            # Writing to Table 6 to Database
+            # rtsdb.Write_to_Table6(table6_rec_new)
 
 
