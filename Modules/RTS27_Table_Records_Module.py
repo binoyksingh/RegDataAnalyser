@@ -203,8 +203,26 @@ class RTS27_Table4:
     LOWEST_EXECUTED_PRICE = 0.00
     CURRENCY = ""
 
-    def __init__(self) :
-        print ("calling constructor - table 6")
+    #def __init__(self) :
+    #    print ("calling constructor - table 6")
+
+    def setSourceCompanyName(self, SOURCE_COMPANY_NAME):
+        self.SOURCE_COMPANY_NAME = SOURCE_COMPANY_NAME
+
+    def setISIN(self, ISIN):
+        self.ISIN = ISIN
+
+    def setFileName(self, FILENAME):
+        self.FILENAME = FILENAME
+
+    def setFileId(self, FILE_ID):
+        self.FILE_ID = FILE_ID
+
+    def setTradeDate(self, TRADE_DATE):
+        self.TRADE_DATE = TRADE_DATE
+
+    def setInstrumentName(self, INSTRUMENT_NAME):
+        self.INSTRUMENT_NAME = INSTRUMENT_NAME
 
     def setSimpleAverageTransactionPrice(self, SIMPLE_AVERAGE_TRANSACTION_PRICE):
         if (SIMPLE_AVERAGE_TRANSACTION_PRICE != ""):
