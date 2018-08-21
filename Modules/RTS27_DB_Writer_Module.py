@@ -5,7 +5,7 @@ import RTS27_Table_Records_Module
 
 class RTS27_DB_Writer:
 
-    BATCH_SIZE = 1000
+    BATCH_SIZE = 5000
     connection = pymysql.Connection
 
     def __init__(self):

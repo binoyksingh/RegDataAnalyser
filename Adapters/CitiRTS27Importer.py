@@ -1,23 +1,29 @@
 import csv
 import glob
 import os
+import fnmatch
 from Modules import RTS27_DB_Writer_Module, RTS27_Table_Records_Module, RTS27_Utilities
 
-hsbc_source_path = "/Users/sarthakagarwal/PycharmProjects/MifidDataAnalyser/Source/Citi/UnZippedSource"
-filenames = sorted(glob.glob(hsbc_source_path+'/SI_*.csv'))
+citi_source_path = "/Users/sarthakagarwal/PycharmProjects/UnZippedSource2"
+#filenames = sorted(glob.glob(hsbc_source_path+'/*.csv'))
 rtsdb = RTS27_DB_Writer_Module.RTS27_DB_Writer()
 
-#filenames = filenames[0:100]
+citifilenames = []
+for root, dirnames, filenames in os.walk(citi_source_path):
+    for filename in fnmatch.filter(filenames, '*.csv'):
+        citifilenames.append(os.path.join(root, filename))
 
-table_switches = RTS27_Utilities.RTS27_TableSwitches("N","N","N","Y") #Table 1, Table 2, Table 3, and Table 4
+#citifilenames = citifilenames[0:100]
 
-print ("Array Length is" + str(len(filenames)))
+table_switches = RTS27_Utilities.RTS27_TableSwitches("N","Y","Y","N") #Table 1, Table 2, Table 3, and Table 4
+
+print ("Array Length is" + str(len(citifilenames)))
 fileId = 0
-for filename in filenames:
+for filename in citifilenames:
    fileId = fileId + 1
    source_firm_name="CITI"
    fileIdString = source_firm_name + "_" + str(fileId)
-   #print("Processing file" + f)
+   print("Percentage Complete : " + str(round((float(fileId)/float(len(citifilenames)) * 100),2)) + "%")
 
    # Table1 properties
 
@@ -170,7 +176,7 @@ for filename in filenames:
 
        # Printing output of Table 2
        if(table_switches.PROCESS_TABLE_2 == "Y"):
-            print (table2_rec.getAttrArray())
+            #print (table2_rec.getAttrArray())
             rtsdb.Write_to_Table2(table2_rec)
 
        # Printing output of Table 4
