@@ -13,10 +13,10 @@ import RTS27_DB_Writer_Module
 import RTS27_Table_Records_Module
 rtsdb = RTS27_DB_Writer_Module.RTS27_DB_Writer()
 
-filenameEOD = "/Users/lojinilogesparan/Documents/mifid_data/Nomura/Intl_EODReport-NIP_1q.csv"
-source_firm_name = "Nomura International Plc"
-filename = "EODReport-NIP_1q.csv"
-dateformat =  '%d/%m/%Y' # '%m/%d/%Y for Bank NBI'
+filenameEOD = "/Users/lojinilogesparan/Documents/mifid_data/Nomura/BankEODReport-NBI_1q.csv"
+source_firm_name = "Nomura Bank International Plc"
+filename = "EODReport-NBI_1q.csv"
+dateformat =  '%m/%d/%Y' # '%m/%d/%Y for Bank NBI and %d/%m/%Y for Intl'
 
 
 with open(filenameEOD, 'rb') as csvfile:
@@ -110,4 +110,5 @@ with open(filenameEOD, 'rb') as csvfile:
            
            
        rowCount += 1    
-       
+
+rtsdb.__del__()
