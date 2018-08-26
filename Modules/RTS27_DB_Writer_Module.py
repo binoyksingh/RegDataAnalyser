@@ -97,6 +97,8 @@ class RTS27_DB_Writer:
 
 # Write data to RTS27 Table 6
     def Write_to_Table6(self, table_6_record):
+        if (table_6_record.NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE == '' or table_6_record.NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE == ' '):
+                print ("******* FOUND IT *********")
         self.list_of_table6_records.append(table_6_record)
         if (len(self.list_of_table6_records) == self.BATCH_SIZE) :
             # Insert Batch
