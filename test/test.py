@@ -1,10 +1,11 @@
-# -*- coding: UTF-8 -*-
-import string
-import decimal
+import logging
+import sys
+import tabula
+import pandas
 
-print("Percentage Complete : " + str(round(0.05 * 100, 2)) + "%")
+file_path = '/Users/sarthakagarwal/PycharmProjects/MifidDataAnalyser/Source/RTS28/2017_Ruffer_top5_execution_venues.pdf'
+df = tabula.read_pdf(file_path, encoding='utf-8', pages='1-13')
+df.to_csv('/Users/sarthakagarwal/PycharmProjects/MifidDataAnalyser/Source/RTS28/output.csv', encoding='utf-8')
 
 
-a = round((float(5)/float(121)),3)
-print str((a)) + "%"
-print("Percentage Complete : " + str(round(decimal.Decimal((5.0 / 121.0) * 100),2)) + "%")
+print "Test to standard out"

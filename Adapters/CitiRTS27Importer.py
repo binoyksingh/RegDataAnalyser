@@ -147,7 +147,7 @@ for filename in citifilenames:
                 table6_rec.setCurrency(table2_rec.CURRENCY)
                 table6_rec.setInstrumentName(table2_rec.INSTRUMENT_NAME)
                 if ("Number Of Order or Request for Quotes" in row[7]):
-                    table6_rec.setNumerOfOrderOrRequestForQuote(row[8])
+                    table6_rec.setNumberOfOrderOrRequestForQuote(row[8])
 
                 if ("Number Of Transactions Executed" in row[7]):
                     table6_rec.setNumberOfTransactionsExecuted(row[8])
