@@ -45,7 +45,7 @@ class RTS27_Table2:
         self.VENUE = VENUE
 
     def setInstrumentName(self, INSTRUMENT_NAME):
-        self.INSTRUMENT_NAME = INSTRUMENT_NAME
+        self.INSTRUMENT_NAME = INSTRUMENT_NAME[:255]
 
     def setInstrumentClassification(self, INSTRUMENT_CLASSIFICATION):
         self.INSTRUMENT_CLASSIFICATION = INSTRUMENT_CLASSIFICATION
@@ -77,6 +77,13 @@ class RTS27_Table6:
     NUMBER_OF_DESIGNATED_MARKET_MAKER = 0.0
     CURRENCY = ""
 
+    def is_number(self,s):
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
+
     def setSourceCompanyName(self, SOURCE_COMPANY_NAME):
         self.SOURCE_COMPANY_NAME = SOURCE_COMPANY_NAME
 
@@ -93,7 +100,7 @@ class RTS27_Table6:
         self.TRADE_DATE = TRADE_DATE
 
     def setInstrumentName(self, INSTRUMENT_NAME):
-        self.INSTRUMENT_NAME = INSTRUMENT_NAME
+        self.INSTRUMENT_NAME = INSTRUMENT_NAME[:255]
 
     def setNumberOfOrderOrRequestForQuote (self, NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE) :
         if (NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE == ''):
@@ -101,7 +108,8 @@ class RTS27_Table6:
 
         if (NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE != ""
             and NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE != " "
-            and NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE != "N/A") :
+            and NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE != "N/A"
+            and self.is_number(NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE)) :
             self.NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE = NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE
 
         else :
@@ -110,7 +118,8 @@ class RTS27_Table6:
     def setNumberOfTransactionsExecuted (self, NUMBER_OF_TRANSACTIONS_EXECUTED) :
         if (NUMBER_OF_TRANSACTIONS_EXECUTED != ""
             and NUMBER_OF_TRANSACTIONS_EXECUTED != " "
-            and NUMBER_OF_TRANSACTIONS_EXECUTED != "N/A"):
+            and NUMBER_OF_TRANSACTIONS_EXECUTED != "N/A"
+            and self.is_number(NUMBER_OF_TRANSACTIONS_EXECUTED)):
             self.NUMBER_OF_TRANSACTIONS_EXECUTED = NUMBER_OF_TRANSACTIONS_EXECUTED
         else :
             self.NUMBER_OF_TRANSACTIONS_EXECUTED = 0
@@ -118,7 +127,8 @@ class RTS27_Table6:
     def setTotalValueOfTransactionsExecuted (self, TOTAL_VALUE_OF_TRANSACTIONS_EXECUTED) :
         if (TOTAL_VALUE_OF_TRANSACTIONS_EXECUTED != ""
             and TOTAL_VALUE_OF_TRANSACTIONS_EXECUTED != " "
-            and TOTAL_VALUE_OF_TRANSACTIONS_EXECUTED != "N/A") :
+            and TOTAL_VALUE_OF_TRANSACTIONS_EXECUTED != "N/A"
+            and self.is_number(TOTAL_VALUE_OF_TRANSACTIONS_EXECUTED)) :
             self.TOTAL_VALUE_OF_TRANSACTIONS_EXECUTED = TOTAL_VALUE_OF_TRANSACTIONS_EXECUTED
         else :
             self.TOTAL_VALUE_OF_TRANSACTIONS_EXECUTED = 0.0
@@ -126,7 +136,8 @@ class RTS27_Table6:
     def setNumberOfOrdersOrRequestCancelledOrWithdrawn (self, NUMBER_OF_ORDERS_OR_REQUEST_CANCELLED_OR_WITHDRAWN) :
         if (NUMBER_OF_ORDERS_OR_REQUEST_CANCELLED_OR_WITHDRAWN !=""
             and NUMBER_OF_ORDERS_OR_REQUEST_CANCELLED_OR_WITHDRAWN !=" "
-            and NUMBER_OF_ORDERS_OR_REQUEST_CANCELLED_OR_WITHDRAWN != "N/A"):
+            and NUMBER_OF_ORDERS_OR_REQUEST_CANCELLED_OR_WITHDRAWN != "N/A"
+            and self.is_number(NUMBER_OF_ORDERS_OR_REQUEST_CANCELLED_OR_WITHDRAWN)):
             self.NUMBER_OF_ORDERS_OR_REQUEST_CANCELLED_OR_WITHDRAWN = NUMBER_OF_ORDERS_OR_REQUEST_CANCELLED_OR_WITHDRAWN
         else :
             self.NUMBER_OF_ORDERS_OR_REQUEST_CANCELLED_OR_WITHDRAWN = 0
@@ -134,7 +145,8 @@ class RTS27_Table6:
     def setNumberOfOrdersOrRequestModified (self, NUMBER_OF_ORDERS_OR_REQUEST_MODIFIED) :
         if (NUMBER_OF_ORDERS_OR_REQUEST_MODIFIED != ""
             and NUMBER_OF_ORDERS_OR_REQUEST_MODIFIED != " "
-            and NUMBER_OF_ORDERS_OR_REQUEST_MODIFIED != "N/A") :
+            and NUMBER_OF_ORDERS_OR_REQUEST_MODIFIED != "N/A"
+            and self.is_number(NUMBER_OF_ORDERS_OR_REQUEST_MODIFIED)) :
             self.NUMBER_OF_ORDERS_OR_REQUEST_MODIFIED = NUMBER_OF_ORDERS_OR_REQUEST_MODIFIED
         else :
             NUMBER_OF_ORDERS_OR_REQUEST_MODIFIED = 0
@@ -142,7 +154,8 @@ class RTS27_Table6:
     def setMedianTransactionSize(self, MEDIAN_TRANSACTION_SIZE):
         if (MEDIAN_TRANSACTION_SIZE!=""
             and MEDIAN_TRANSACTION_SIZE!=" "
-            and MEDIAN_TRANSACTION_SIZE != "N/A"):
+            and MEDIAN_TRANSACTION_SIZE != "N/A"
+            and self.is_number(MEDIAN_TRANSACTION_SIZE)):
             self.MEDIAN_TRANSACTION_SIZE = MEDIAN_TRANSACTION_SIZE
         else :
             MEDIAN_TRANSACTION_SIZE = 0.0
@@ -150,7 +163,8 @@ class RTS27_Table6:
     def setMedianSizeOfAllOrdersOrRequestsForQuote(self, MEDIAN_SIZE_OF_ALL_ORDERS_OR_REQUESTS_FOR_QUOTE):
         if (MEDIAN_SIZE_OF_ALL_ORDERS_OR_REQUESTS_FOR_QUOTE!=""
             and MEDIAN_SIZE_OF_ALL_ORDERS_OR_REQUESTS_FOR_QUOTE!=" "
-            and MEDIAN_SIZE_OF_ALL_ORDERS_OR_REQUESTS_FOR_QUOTE != "N/A") :
+            and MEDIAN_SIZE_OF_ALL_ORDERS_OR_REQUESTS_FOR_QUOTE != "N/A"
+            and self.is_number(MEDIAN_SIZE_OF_ALL_ORDERS_OR_REQUESTS_FOR_QUOTE)) :
             self.MEDIAN_SIZE_OF_ALL_ORDERS_OR_REQUESTS_FOR_QUOTE = MEDIAN_SIZE_OF_ALL_ORDERS_OR_REQUESTS_FOR_QUOTE
         else :
             self.MEDIAN_SIZE_OF_ALL_ORDERS_OR_REQUESTS_FOR_QUOTE = 0.0
@@ -158,7 +172,8 @@ class RTS27_Table6:
     def setNumberOfDesignatedMarketMaker (self, NUMBER_OF_DESIGNATED_MARKET_MAKER) :
         if (NUMBER_OF_DESIGNATED_MARKET_MAKER != ""
             and NUMBER_OF_DESIGNATED_MARKET_MAKER != " "
-            and NUMBER_OF_DESIGNATED_MARKET_MAKER != "N/A"):
+            and NUMBER_OF_DESIGNATED_MARKET_MAKER != "N/A"
+            and self.is_number(NUMBER_OF_DESIGNATED_MARKET_MAKER)):
             self.NUMBER_OF_DESIGNATED_MARKET_MAKER = NUMBER_OF_DESIGNATED_MARKET_MAKER
         else :
             self.NUMBER_OF_DESIGNATED_MARKET_MAKER = 0
@@ -225,6 +240,13 @@ class RTS27_Table4:
 
     #def __init__(self) :
     #    print ("calling constructor - table 6")
+    
+    def is_number(self,s):
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
 
     def setSourceCompanyName(self, SOURCE_COMPANY_NAME):
         self.SOURCE_COMPANY_NAME = SOURCE_COMPANY_NAME
@@ -245,28 +267,28 @@ class RTS27_Table4:
         self.TRADE_DATE = TRADE_DATE
 
     def setInstrumentName(self, INSTRUMENT_NAME):
-        self.INSTRUMENT_NAME = INSTRUMENT_NAME
+        self.INSTRUMENT_NAME = INSTRUMENT_NAME[:255]
 
     def setSimpleAverageTransactionPrice(self, SIMPLE_AVERAGE_TRANSACTION_PRICE):
-        if (SIMPLE_AVERAGE_TRANSACTION_PRICE != "" and SIMPLE_AVERAGE_TRANSACTION_PRICE != "N/A"):
+        if (SIMPLE_AVERAGE_TRANSACTION_PRICE != "" and SIMPLE_AVERAGE_TRANSACTION_PRICE != "N/A" and self.is_number(SIMPLE_AVERAGE_TRANSACTION_PRICE)):
             self.SIMPLE_AVERAGE_TRANSACTION_PRICE = SIMPLE_AVERAGE_TRANSACTION_PRICE
         else :
             self.SIMPLE_AVERAGE_TRANSACTION_PRICE = 0.0
 
     def setVolumeWeightedTransactionPrice(self, VOLUME_WEIGHTED_TRANSACTION_PRICE):
-        if (VOLUME_WEIGHTED_TRANSACTION_PRICE != "" and VOLUME_WEIGHTED_TRANSACTION_PRICE != "N/A"):
+        if (VOLUME_WEIGHTED_TRANSACTION_PRICE != "" and VOLUME_WEIGHTED_TRANSACTION_PRICE != "N/A" and self.is_number(VOLUME_WEIGHTED_TRANSACTION_PRICE)):
             self.VOLUME_WEIGHTED_TRANSACTION_PRICE = VOLUME_WEIGHTED_TRANSACTION_PRICE
         else:
             self.VOLUME_WEIGHTED_TRANSACTION_PRICE = 0.0
 
     def setHighestExecutedPrice(self, HIGHEST_EXECUTED_PRICE):
-        if (HIGHEST_EXECUTED_PRICE != "" and HIGHEST_EXECUTED_PRICE!="N/A"):
+        if (HIGHEST_EXECUTED_PRICE != "" and HIGHEST_EXECUTED_PRICE!="N/A" and self.is_number(HIGHEST_EXECUTED_PRICE)):
             self.HIGHEST_EXECUTED_PRICE = HIGHEST_EXECUTED_PRICE
         else:
             self.HIGHEST_EXECUTED_PRICE = 0.0
 
     def setLowestExecutedPrice(self, LOWEST_EXECUTED_PRICE):
-        if (LOWEST_EXECUTED_PRICE != "" and LOWEST_EXECUTED_PRICE != "N/A"):
+        if (LOWEST_EXECUTED_PRICE != "" and LOWEST_EXECUTED_PRICE != "N/A" and self.is_number(LOWEST_EXECUTED_PRICE)):
             self.LOWEST_EXECUTED_PRICE = LOWEST_EXECUTED_PRICE
         else:
             self.LOWEST_EXECUTED_PRICE = 0.0
