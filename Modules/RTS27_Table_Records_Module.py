@@ -2,6 +2,7 @@
 
 import pymysql, sys
 from decimal import Decimal
+from  ProductClassification import AssetClassModule
 
 class RTS27_Table2:
 
@@ -14,6 +15,17 @@ class RTS27_Table2:
     INSTRUMENT_NAME = ""
     INSTRUMENT_CLASSIFICATION = ""
     CURRENCY = ""
+    # CFI Codes
+    CFI_ATTR_1_DESC = ""
+    CFI_ATTR_2_DESC = ""
+    CFI_ATTR_3_DESC = ""
+    CFI_ATTR_4_DESC = ""
+    CFI_ATTR_5_DESC = ""
+    CFI_ATTR_6_DESC = ""
+
+    # ISDA Codes
+    ISDA_ASSET_CLASS_ID = AssetClassModule.AssetClass.UNCLASSIFIED     ### 1 - stands for Unclassified
+    ISDA_ASSET_CLASS_DESC = AssetClassModule.AssetClass.getDesc(AssetClassModule.AssetClass.UNCLASSIFIED)   ## Default should be UNCLASSIFIED
 
     def setAttributes(self, SOURCE_COMPANY_NAME, FILENAME,FILE_ID , ISIN, TRADE_DATE, VENUE, INSTRUMENT_NAME, INSTRUMENT_CLASSIFICATION, CURRENCY):
         self.SOURCE_COMPANY_NAME = SOURCE_COMPANY_NAME
@@ -47,16 +59,96 @@ class RTS27_Table2:
     def setInstrumentName(self, INSTRUMENT_NAME):
         self.INSTRUMENT_NAME = INSTRUMENT_NAME
 
-    def setInstrumentClassification(self, INSTRUMENT_CLASSIFICATION):
-        self.INSTRUMENT_CLASSIFICATION = INSTRUMENT_CLASSIFICATION
+    def setInstrumentClassification(self, INSTRUMENT_CLASSIFICATION,cfi_assetclass_map,cfi_char_map):
+        self.INSTRUMENT_CLASSIFICATION = INSTRUMENT_CLASSIFICATION.upper()
+
+        self.ISDA_ASSET_CLASS_ID = self.getAssetClassEnum(cfi_assetclass_map)
+        self.ISDA_ASSET_CLASS_DESC = AssetClassModule.AssetClass.getDesc(self.ISDA_ASSET_CLASS_ID)
+
+        cfi_group = (self.INSTRUMENT_CLASSIFICATION[:2]).upper()
+        self.setCFIAttr(cfi_assetclass_map[cfi_group][0], "ATTR_1" )
+        self.setCFIAttr(cfi_assetclass_map[cfi_group][1], "ATTR_2" )
+        self.setCFIAttr(self.getCFIAttr_3_Desc(cfi_char_map),"ATTR_3" )
+        self.setCFIAttr(self.getCFIAttr_4_Desc(cfi_char_map),"ATTR_4" )
+        self.setCFIAttr(self.getCFIAttr_5_Desc(cfi_char_map), "ATTR_5" )
+        self.setCFIAttr(self.getCFIAttr_6_Desc(cfi_char_map), "ATTR_6" )
 
     def setCurrency(self,  CURRENCY):
         self.CURRENCY = CURRENCY
 
     def getAttrArray(self):
         single_record_array = [self.SOURCE_COMPANY_NAME, self.FILENAME, self.FILE_ID, self.ISIN, self.TRADE_DATE,
-                                       self.VENUE, self.INSTRUMENT_NAME, self.INSTRUMENT_CLASSIFICATION, self.CURRENCY]
+                                       self.VENUE, self.INSTRUMENT_NAME, self.INSTRUMENT_CLASSIFICATION, self.CURRENCY,
+                                        str(self.ISDA_ASSET_CLASS_ID.value), self.ISDA_ASSET_CLASS_DESC, self.CFI_ATTR_1_DESC,
+                                        self.CFI_ATTR_2_DESC,self.CFI_ATTR_3_DESC, self.CFI_ATTR_4_DESC,
+                                        self.CFI_ATTR_5_DESC, self.CFI_ATTR_6_DESC]
         return single_record_array
+
+    def setCFIAttr(self, cfi_attr_desc, cfi_attr_num ):
+        if (cfi_attr_num == "ATTR_1"):
+            self.CFI_ATTR_1_DESC = cfi_attr_desc
+
+        if (cfi_attr_num == "ATTR_2"):
+            self.CFI_ATTR_2_DESC = cfi_attr_desc
+
+        if (cfi_attr_num == "ATTR_3"):
+            self.CFI_ATTR_3_DESC = cfi_attr_desc
+
+        if (cfi_attr_num == "ATTR_4"):
+            self.CFI_ATTR_4_DESC = cfi_attr_desc
+
+        if (cfi_attr_num == "ATTR_5"):
+            self.CFI_ATTR_5_DESC = cfi_attr_desc
+
+        if (cfi_attr_num == "ATTR_6"):
+            self.CFI_ATTR_6_DESC = cfi_attr_desc
+
+    def getAssetClassEnum(self, cfi_assetclass_map):
+        cfi_group = ""
+        if (self.INSTRUMENT_CLASSIFICATION != "") :
+            cfi_group = (self.INSTRUMENT_CLASSIFICATION[:2]).upper()
+            asset_class_id = (int)(cfi_assetclass_map[cfi_group][2])
+            return AssetClassModule.AssetClass(asset_class_id)
+
+    def getCFIAttr_3_Desc(self, cfi_char_map):
+        cfi_group = ""
+        attribute_desc = "Unclassified"
+        if (self.INSTRUMENT_CLASSIFICATION != ""):
+            cfi_group = self.INSTRUMENT_CLASSIFICATION[:2]
+            for x in cfi_char_map:
+                if ((x[0]==cfi_group) and (x[1] == "ATTR_3") and (x[3]==self.INSTRUMENT_CLASSIFICATION[2])):
+                      attribute_desc = x[4]
+        return attribute_desc
+
+    def getCFIAttr_4_Desc(self, cfi_char_map):
+        cfi_group = ""
+        attribute_desc = "Unclassified"
+        if (self.INSTRUMENT_CLASSIFICATION != ""):
+            cfi_group = self.INSTRUMENT_CLASSIFICATION[:2]
+            for x in cfi_char_map:
+                if ((x[0]==cfi_group) and (x[1] == "ATTR_4") and (x[3]==self.INSTRUMENT_CLASSIFICATION[3])):
+                      attribute_desc = x[4]
+        return attribute_desc
+
+    def getCFIAttr_5_Desc(self, cfi_char_map):
+        cfi_group = ""
+        attribute_desc = "Unclassified"
+        if (self.INSTRUMENT_CLASSIFICATION != ""):
+            cfi_group = self.INSTRUMENT_CLASSIFICATION[:2]
+            for x in cfi_char_map:
+                if ((x[0]==cfi_group) and (x[1] == "ATTR_5") and (x[3]==self.INSTRUMENT_CLASSIFICATION[4])):
+                      attribute_desc = x[4]
+        return attribute_desc
+
+    def getCFIAttr_6_Desc(self, cfi_char_map):
+        cfi_group = ""
+        attribute_desc = "Unclassified"
+        if (self.INSTRUMENT_CLASSIFICATION != ""):
+            cfi_group = self.INSTRUMENT_CLASSIFICATION[:2]
+            for x in cfi_char_map:
+                if ((x[0]==cfi_group) and (x[1] == "ATTR_6") and (x[3]==self.INSTRUMENT_CLASSIFICATION[5])):
+                      attribute_desc = x[4]
+        return attribute_desc
 
 class RTS27_Table6:
 
