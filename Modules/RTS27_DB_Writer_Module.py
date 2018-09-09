@@ -65,8 +65,9 @@ class RTS27_DB_Writer:
 
         # Printing output of Table 2
         insert_rts27__table2_sql_string = "INSERT INTO `MIFID_RTS27_TABLE2` (`SOURCE_COMPANY_NAME`, `FILENAME`,`FILE_ID`,`ISIN`,`TRADE_DATE`,`VENUE`," \
-                                          "`INSTRUMENT_NAME`,`INSTRUMENT_CLASSIFICATION`,`CURRENCY`) " \
-                                          " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s )"
+                                          "`INSTRUMENT_NAME`,`INSTRUMENT_CLASSIFICATION`,`CURRENCY`,`ASSET_CLASS_ID`,`ASSET_CLASS_DESC`,`CFI_ATTR_1_DESC`," \
+                                          "`CFI_ATTR_2_DESC`,`CFI_ATTR_3_DESC`,`CFI_ATTR_4_DESC`,`CFI_ATTR_5_DESC`,`CFI_ATTR_6_DESC`) " \
+                                          " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s )"
 
         #self.cursor.execute(insert_rts27__table2_sql_string, (publishing_firm_name, filename, fileIdString, table2_isin, table2_dateofthetradingday, table2_venue, table2_instrumentname, table2_instrumentclassification,table2_currency))
         self.cursor.executemany(insert_rts27__table2_sql_string, batch)
