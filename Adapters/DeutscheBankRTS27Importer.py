@@ -6,6 +6,7 @@ from xml.dom import minidom
 import xml.etree.ElementTree as ET
 import ast, codecs
 from Modules import RTS27_DB_Writer_Module, RTS27_Table_Records_Module, RTS27_Utilities
+from Modules import RTS27_Prod_Class_DB_Reader_Module
 
 def processHeader (buffer) :
     headerXML = ET.fromstring(buffer)
@@ -14,7 +15,7 @@ def processHeader (buffer) :
     trade_date = (headerXML.findall('DtTrdDay')[0].text).encode('utf-8', errors='ignore')
     venue =  (headerXML.findall('MktSgmt')[0].text).encode('utf-8', errors='ignore')
 
-def processFinancialInstrument (buffer, header_str, rtsdb, fileId) :
+def processFinancialInstrument (buffer, header_str, rtsdb, rts_db_rd,fileId) :
 
     headerXML = ET.fromstring(header_str)
 
@@ -39,7 +40,7 @@ def processFinancialInstrument (buffer, header_str, rtsdb, fileId) :
     table2_rec.setInstrumentName(
         (financialInstrument.findall("FinInstrNm")[0].text).encode('utf-8', errors='ignore'))
     table2_rec.setInstrumentClassification(
-        (financialInstrument.findall("CFICd")[0].text).encode('utf-8', errors='ignore'))
+        (financialInstrument.findall("CFICd")[0].text).encode('utf-8', errors='ignore'), rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
     table2_rec.setCurrency(
         (financialInstrument.findall("Ccy")[0].text).encode('utf-8', errors='ignore'))
 
@@ -134,6 +135,7 @@ def processFinancialInstrument (buffer, header_str, rtsdb, fileId) :
 
 db_source_path = "/Users/sarthakagarwal/PycharmProjects/MifidDataAnalyser/Source/DeutscheBank/UnzippedSource"
 rtsdb = RTS27_DB_Writer_Module.RTS27_DB_Writer()
+rts_db_rd = RTS27_Prod_Class_DB_Reader_Module.RTS27_Prod_Class_DB_Reader()
 
 dbfilenames = []
 for root, dirnames, filenames in os.walk(db_source_path):
@@ -176,7 +178,7 @@ for filename in dbfilenames:
         for line in inputfile:
             if '<FinInstrument>' in line:
                 finInstrument_string = line[line.find("<FinInstrument>"):line.find("</FinInstrument>") + len("</FinInstrument>")]
-                processFinancialInstrument(finInstrument_string, header_string, rtsdb, fileId)
+                processFinancialInstrument(finInstrument_string, header_string, rtsdb, rts_db_rd,fileId)
 
     #mydoc = minidom.parse(xml_file)
 

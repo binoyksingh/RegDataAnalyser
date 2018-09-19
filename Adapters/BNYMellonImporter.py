@@ -1,10 +1,18 @@
 import fnmatch
 import os
 from datetime import datetime
-
 from openpyxl import load_workbook
-
 from Modules import RTS27_DB_Writer_Module, RTS27_Table_Records_Module, RTS27_Utilities
+from Modules import RTS27_Prod_Class_DB_Reader_Module
+from Modules import RTS27_LEI_Company_Map_Module
+
+#
+# PRIMARY Key to Join Tables 2,4,6 :
+# Company Name
+# ISIN
+# Trade Date
+# CCY
+#
 
 bnymellon_source_path = "/Users/sarthakagarwal/PycharmProjects/MifidDataAnalyser/Source/BNYMellon/Unzipped source"
 #bnymellonfilenames = sorted(glob.iglob(bnymellon_source_path+'/**/*.xslx',recursive=True))
@@ -16,45 +24,67 @@ for root, dirnames, filenames in os.walk(bnymellon_source_path):
         bnymellonfilenames.append(os.path.join(root, filename))
 
 #bnymellonfilenames = bnymellonfilenames[0:3]
-source_firm_name = "BNYMellon"
+source_firm_group_name = "BNYMellon"
+source_company_name=""
+rts_db_rd = RTS27_Prod_Class_DB_Reader_Module.RTS27_Prod_Class_DB_Reader()
 
-table_switches = RTS27_Utilities.RTS27_TableSwitches("N","N","Y","N") #Table 1, Table 2, Table 3, and Table 4
+table_switches = RTS27_Utilities.RTS27_TableSwitches("Y","Y","Y","Y") #Table 1, Table 2, Table 3, and Table 4
 
 fileId = 0
 list_of_table2_records = []
 list_of_table6_records = []
 for filename in bnymellonfilenames:
-    print("Processing file" + filename)
+    print("Processing file" + os.path.basename(filename))
     wb = load_workbook(filename)
     wsheet = wb.worksheets[0] # reading the first sheet only
 
     CurrentFinancialInstrumentAtRow = 0
     PrevFinancialInstrumentAtRow = 0
+    formatted_date = ""
+    company_code = ""
 
     for rowcount in range(1, wsheet.max_row + 1):
+        if ((wsheet.cell(row=rowcount , column=2)).value == "Type of Execution Venue"):
+            # Building Table 1 object
+            table1_rec = RTS27_Table_Records_Module.RTS27_Table1()
+            table1_rec.setSourceCompanyCode(str(str(wsheet.cell(row=rowcount+1 , column=2).value).decode('ascii', errors='ignore')))
+            company_code = str(wsheet.cell(row=rowcount+1 , column=2).value)
+            lei_comp_obj = RTS27_LEI_Company_Map_Module.RTS27_LEI_Company_Map()
+            source_company_name = lei_comp_obj.getMap()[company_code]
+            table1_rec.setSourceCompanyGroupName(source_firm_group_name)
+            table1_rec.setSourceCompanyName(source_company_name)
+            rawdate = datetime.strptime((wsheet.cell(row=5 , column=2)).value, '%Y-%m-%d')
+            formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
+            table1_rec.setTradeDate(formatted_date)
+            table1_rec.setCountryOfCompetentAuthority((wsheet.cell(row=3 , column=2)).value)
+            table1_rec.setMarketSegmentID((wsheet.cell(row=4, column=2)).value)
+            table1_rec.setFileName(os.path.basename(filename))
+            table1_rec.setFailedTransactionsNumber((wsheet.cell(row=8, column=2)).value)
+
+            if (table_switches.PROCESS_TABLE_1 == "Y") :
+                # Writing to Table 1 to Database
+                rtsdb.Write_to_Table1(table1_rec)
+
         if ((wsheet.cell(row=rowcount , column=2)).value == "Type of Financial Instrument"):
             CurrentFinancialInstrumentAtRow = rowcount
             # Found an instrument, now to build the objects
-            # Building Table 2 output
+            # Building Table 2 object
             table2_rec = RTS27_Table_Records_Module.RTS27_Table2()
-            rawdate = datetime.strptime((wsheet.cell(row=5 , column=2)).value, '%Y-%m-%d')
-            formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
-            table2_rec.setFileId(source_firm_name + "_" + str(rowcount))
             table2_rec.setInstrumentName(str(str(wsheet.cell(row=rowcount+1 , column=2).value).decode('ascii', errors='ignore')))
             table2_rec.setISIN(str(wsheet.cell(row=rowcount+2 , column=2).value))
-            table2_rec.setInstrumentClassification(str(wsheet.cell(row=rowcount+4 , column=2).value))
+            table2_rec.setInstrumentClassification(str(wsheet.cell(row=rowcount+4 , column=2).value), rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
             table2_rec.setCurrency(str(wsheet.cell(row=rowcount+5 , column=2).value))
 
-            table2_rec.setSourceCompanyName(source_firm_name)
+            table2_rec.setSourceCompanyName(source_company_name)
             table2_rec.setFileName(os.path.basename(filename))
             table2_rec.setTradeDate(formatted_date)
-            table2_rec.setFileId(source_firm_name + "_" + str(rowcount))
+            table2_rec.setFileId(company_code +"_"+ formatted_date +"_"+ table2_rec.ISIN + "_" + table2_rec.CURRENCY)
 
             # -----------------------------------------------------------
             # Building Table 4
             table4_rec_new = RTS27_Table_Records_Module.RTS27_Table4()
-            table4_rec_new.SOURCE_COMPANY_NAME = source_firm_name
-            table4_rec_new.FILENAME = filename
+            table4_rec_new.SOURCE_COMPANY_NAME = source_company_name
+            table4_rec_new.FILENAME = os.path.basename(filename)
             table4_rec_new.TRADE_DATE = formatted_date
             table4_rec_new.FILE_ID = table2_rec.FILE_ID
             table4_rec_new.INSTRUMENT_NAME = table2_rec.INSTRUMENT_NAME
@@ -73,8 +103,8 @@ for filename in bnymellonfilenames:
             # -----------------------------------------------------------
             # Building Table 6
             table6_rec_new = RTS27_Table_Records_Module.RTS27_Table6()
-            table6_rec_new.SOURCE_COMPANY_NAME = source_firm_name
-            table6_rec_new.FILENAME = filename
+            table6_rec_new.SOURCE_COMPANY_NAME = source_company_name
+            table6_rec_new.FILENAME = os.path.basename(filename)
             table6_rec_new.TRADE_DATE = formatted_date
             table6_rec_new.FILE_ID = table2_rec.FILE_ID
             table6_rec_new.INSTRUMENT_NAME = table2_rec.INSTRUMENT_NAME
