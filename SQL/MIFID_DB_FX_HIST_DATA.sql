@@ -1,0 +1,13 @@
+use mifid;
+DROP TABLE FX_HIST_DATA;
+CREATE TABLE FX_HIST_DATA (
+    ENTRY_ID INT NOT NULL AUTO_INCREMENT primary key,
+    CURRENCY_CODE varchar(5),
+    CURRENCY_NAME varchar(100),
+    BASE_CURRENCY_CODE varchar(5),
+    BASE_CURRENCY_NAME varchar(100),
+    UNITS_PER_BASE_CCY decimal (15,15),
+    BASE_CCY_PER_UNIT decimal (15,15),
+    RATE_DATE date,
+    ENTRY_TIMESTAMP timestamp default CURRENT_TIMESTAMP()
+);

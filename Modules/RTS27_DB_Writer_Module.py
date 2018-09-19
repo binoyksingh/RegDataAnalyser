@@ -13,6 +13,7 @@ class RTS27_DB_Writer:
         self.connection = pymysql.connect(host='35.224.67.19', user='root', password='root', db='mifid')
         self.cursor = self.connection.cursor()
 
+        self.list_of_table1_records = []
         self.list_of_table2_records = []
         self.list_of_table6_records = []
         self.list_of_table4_records = []
@@ -46,6 +47,15 @@ class RTS27_DB_Writer:
                 table4_batch.append(table4_rec.getAttrArray())
             self.Write_to_Table4_DB(table4_batch)
             self.list_of_table4_records = []
+
+        if (len(self.list_of_table1_records)!=0):
+            print ("Some table1 records left..")
+            # Insert Batch
+            table1_batch = []
+            for table1_rec in self.list_of_table1_records:
+                table1_batch.append(table1_rec.getAttrArrayTable1())
+            self.Write_to_Table1_DB(table1_batch)
+            self.list_of_table1_records = []
 
         self.connection.close()
 
@@ -96,7 +106,7 @@ class RTS27_DB_Writer:
         self.connection.commit()
         return;
 
-# Write data to RTS27 Table 6
+    # Write data to RTS27 Table 6
     def Write_to_Table6(self, table_6_record):
         if (table_6_record.NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE == '' or table_6_record.NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE == ' '):
                 print ("******* FOUND IT *********")
@@ -119,6 +129,30 @@ class RTS27_DB_Writer:
                                           " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s )"
 
         self.cursor.executemany(insert_rts27__table6_sql_string, batch)
+        self.connection.commit()
+        return;
+
+        # Write data to RTS27 Table 6
+
+    def Write_to_Table1(self, table_1_record):
+        self.list_of_table1_records.append(table_1_record)
+        if (len(self.list_of_table1_records) == self.BATCH_SIZE):
+            # Insert Batch
+            batch = []
+            for rec in self.list_of_table1_records:
+                batch.append(rec.getAttrArray())
+            self.Write_to_Table1_DB(batch)
+            self.list_of_table1_records = []
+
+    def Write_to_Table1_DB(self, batch):
+
+        insert_rts27_table1_sql_string = "INSERT INTO `MIFID_RTS27_TABLE1` (`SOURCE_COMPANY_GROUP_NAME`, `SOURCE_COMPANY_NAME`,`SOURCE_COMPANY_CODE`,`COUNTRY_OF_COMPETENT_AUTHORITY`,`MARKET_SEGMENT_NAME`," \
+                                          "`MARKET_SEGMENT_ID`,`TRADE_DATE`,`OUTAGES_NATURE`,`OUTAGES_NUMBER`,`OUTAGES_AVERAGE_DURATION`," \
+                                          "`SCHEDULED_AUCTION_NATURE`,`SCHEDULED_AUCTION_NUMBER`,`SCHEDULED_AUCTION_AVERAGE_DURATION`,`FAILED_TRANSACTIONS_NUMBER`," \
+                                          "`FAILED_TRANSACTIONS_PERCENT`,`FILENAME`,`FILE_ID`," \
+                                          "`ISIN`,`INSTRUMENT_NAME`,`INSTRUMENT_CLASSIFICATION`,`CURRENCY`) " \
+                                          " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s )"
+        self.cursor.executemany(insert_rts27_table1_sql_string, batch)
         self.connection.commit()
         return;
 

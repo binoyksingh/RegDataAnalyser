@@ -415,3 +415,137 @@ class RTS27_Table4:
                                 self.LOWEST_EXECUTED_PRICE,
                                 self.CURRENCY ]
         return single_record_array
+
+
+class RTS27_Table1:
+    # Define list of attributes
+    SOURCE_COMPANY_GROUP_NAME=""
+    SOURCE_COMPANY_NAME=""
+    SOURCE_COMPANY_CODE=""
+    COUNTRY_OF_COMPETENT_AUTHORITY=""
+    MARKET_SEGMENT_NAME=""
+    MARKET_SEGMENT_ID=""
+    TRADE_DATE=""
+    OUTAGES_NATURE=""
+    OUTAGES_NUMBER=0
+    OUTAGES_AVERAGE_DURATION=""
+    SCHEDULED_AUCTION_NATURE=""
+    SCHEDULED_AUCTION_NUMBER=""
+    SCHEDULED_AUCTION_AVERAGE_DURATION=""
+    FAILED_TRANSACTIONS_NUMBER=""
+    FAILED_TRANSACTIONS_PERCENT=0.00
+    FILENAME=""
+    FILE_ID=""
+    ISIN=""
+    INSTRUMENT_NAME=""
+    INSTRUMENT_CLASSIFICATION=""
+    CURRENCY=""
+
+    def is_number(self, s):
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
+
+    def setSourceCompanyName(self, SOURCE_COMPANY_NAME):
+        self.SOURCE_COMPANY_NAME = SOURCE_COMPANY_NAME
+
+    def setSourceCompanyGroupName(self, SOURCE_COMPANY_GROUP_NAME):
+        self.SOURCE_COMPANY_GROUP_NAME = SOURCE_COMPANY_GROUP_NAME
+
+    def setSourceCompanyCode(self, SOURCE_COMPANY_CODE):
+        self.SOURCE_COMPANY_CODE = SOURCE_COMPANY_CODE
+
+    def setCountryOfCompetentAuthority(self, COUNTRY_OF_COMPETENT_AUTHORITY):
+        self.COUNTRY_OF_COMPETENT_AUTHORITY = COUNTRY_OF_COMPETENT_AUTHORITY
+
+    def setMarketSegmentName(self, MARKET_SEGMENT_NAME):
+        self.MARKET_SEGMENT_NAME = MARKET_SEGMENT_NAME
+
+    def setMarketSegmentID(self, MARKET_SEGMENT_ID):
+        self.MARKET_SEGMENT_ID = MARKET_SEGMENT_ID
+
+    def setTradeDate(self, TRADE_DATE):
+        self.TRADE_DATE = TRADE_DATE
+
+    def setOutagesNature(self, OUTAGES_NATURE):
+        self.OUTAGES_NATURE = OUTAGES_NATURE
+
+    def setOutagesNumber(self, OUTAGES_NUMBER):
+        if (OUTAGES_NUMBER != "" and OUTAGES_NUMBER != "N/A"
+            and OUTAGES_NUMBER != " " and OUTAGES_NUMBER!=None and OUTAGES_NUMBER!="NULL" ):
+            if (self.is_number(OUTAGES_NUMBER)):
+                self.OUTAGES_NUMBER = OUTAGES_NUMBER
+        else:
+            self.OUTAGES_NUMBER = 0
+
+    def setOutagesAverageDuration(self, OUTAGES_AVERAGE_DURATION):
+        self.OUTAGES_AVERAGE_DURATION = OUTAGES_AVERAGE_DURATION
+
+    def setScheduledAutionNature(self, SCHEDULED_AUCTION_NATURE):
+        self.SCHEDULED_AUCTION_NATURE = SCHEDULED_AUCTION_NATURE
+
+    def setScheduledAutionNumber(self, SCHEDULED_AUCTION_NUMBER):
+        self.SCHEDULED_AUCTION_NUMBER = SCHEDULED_AUCTION_NUMBER
+
+    def setScheduledAutionAverageDuration(self, SCHEDULED_AUCTION_AVERAGE_DURATION):
+        self.SCHEDULED_AUCTION_AVERAGE_DURATION = SCHEDULED_AUCTION_AVERAGE_DURATION
+
+    def setFailedTransactionsNumber(self, FAILED_TRANSACTIONS_NUMBER):
+        if (FAILED_TRANSACTIONS_NUMBER != "" and FAILED_TRANSACTIONS_NUMBER != "N/A"
+            and FAILED_TRANSACTIONS_NUMBER != " " and FAILED_TRANSACTIONS_NUMBER!=None and FAILED_TRANSACTIONS_NUMBER!="NULL" ):
+            if (self.is_number(FAILED_TRANSACTIONS_NUMBER)):
+                self.FAILED_TRANSACTIONS_NUMBER = FAILED_TRANSACTIONS_NUMBER
+        else:
+            self.FAILED_TRANSACTIONS_NUMBER = 0
+
+    def setFailedTransactionsPercent(self, FAILED_TRANSACTIONS_PERCENT):
+        if (FAILED_TRANSACTIONS_PERCENT != "" and FAILED_TRANSACTIONS_PERCENT != "N/A" and FAILED_TRANSACTIONS_PERCENT != "NULL"
+                and self.is_number(FAILED_TRANSACTIONS_PERCENT)):
+            self.FAILED_TRANSACTIONS_PERCENT = FAILED_TRANSACTIONS_PERCENT
+        else:
+            self.FAILED_TRANSACTIONS_PERCENT = 0.0
+
+    def setCurrency(self, CURRENCY):
+        self.CURRENCY = CURRENCY
+
+    def setISIN(self, ISIN):
+        self.ISIN = ISIN
+
+    def setFileName(self, FILENAME):
+        self.FILENAME = FILENAME
+
+    def setFileId(self, FILE_ID):
+        self.FILE_ID = FILE_ID
+
+    def setInstrumentName(self, INSTRUMENT_NAME):
+        self.INSTRUMENT_NAME = INSTRUMENT_NAME
+
+    def setInstrumentClassification(self, INSTRUMENT_CLASSIFICATION):
+        self.INSTRUMENT_CLASSIFICATION = INSTRUMENT_CLASSIFICATION
+
+    def getAttrArrayTable1(self):
+        single_record_array = [
+                               self.SOURCE_COMPANY_GROUP_NAME,
+                               self.SOURCE_COMPANY_NAME,
+                               self.SOURCE_COMPANY_CODE,
+                               self.COUNTRY_OF_COMPETENT_AUTHORITY,
+                               self.MARKET_SEGMENT_NAME,
+                               self.MARKET_SEGMENT_ID,
+                               self.TRADE_DATE,
+                               self.OUTAGES_NATURE,
+                               self.OUTAGES_NUMBER,
+                               self.OUTAGES_AVERAGE_DURATION,
+                               self.SCHEDULED_AUCTION_NATURE,
+                               self.SCHEDULED_AUCTION_NUMBER,
+                               self.SCHEDULED_AUCTION_AVERAGE_DURATION,
+                               self.FAILED_TRANSACTIONS_NUMBER,
+                               self.FAILED_TRANSACTIONS_PERCENT,
+                               self.FILENAME,
+                               self.FILE_ID,
+                               self.ISIN,
+                               self.INSTRUMENT_NAME,
+                               self.INSTRUMENT_CLASSIFICATION,
+                               self.CURRENCY]
+        return single_record_array
