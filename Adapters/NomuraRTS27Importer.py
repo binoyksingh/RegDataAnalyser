@@ -19,7 +19,7 @@ rts_db_rd = RTS27_Prod_Class_DB_Reader_Module.RTS27_Prod_Class_DB_Reader()
 filenameEOD = "/Users/lojinilogesparan/Documents/mifid_data/Nomura/Intl_EODReport-NIP_1q.csv"
 source_firm_name = "Nomura International Plc"
 source_firm_group_name = "Nomura"
-filename = "Intl_EODReport-NIP_1q"
+filename = "EODReport-NIP_1q"
 dateformat =  '%d/%m/%Y' # '%m/%d/%Y for Bank NBI and %d/%m/%Y for Intl'
 
 
@@ -60,10 +60,14 @@ with open(filenameEOD, 'rb') as csvfile:
            #print table2_rec.getAttrArray()
            
            # Writing to Table 2
-           #rtsdb.Write_to_Table2(table2_rec)
+           rtsdb.Write_to_Table2(table2_rec)
            
            
            # Writing to Table 1 to Database
+           table1_rec.ISIN = table2_rec.ISIN
+           table1_rec.INSTRUMENT_CLASSIFICATION = table2_rec.INSTRUMENT_CLASSIFICATION
+           table1_rec.INSTRUMENT_NAME = table2_rec.INSTRUMENT_NAME
+           table1_rec.CURRENCY = table2_rec.CURRENCY
            table1_rec.FILE_ID = table2_rec.FILE_ID
            #print table1_rec.getAttrArrayTable1()
            rtsdb.Write_to_Table1(table1_rec)
@@ -90,7 +94,7 @@ with open(filenameEOD, 'rb') as csvfile:
 
            #print table4_rec_new.getAttrArray()
            # Writing to Table 4
-           #rtsdb.Write_to_Table4(table4_rec_new)
+           rtsdb.Write_to_Table4(table4_rec_new)
            
            # -----------------------------------------------------------
            # Building Table 6
@@ -128,7 +132,7 @@ with open(filenameEOD, 'rb') as csvfile:
            #print table6_rec_new.getAttrArray()
 
            # Writing to Table 6 to Database
-           #rtsdb.Write_to_Table6(table6_rec_new)
+           rtsdb.Write_to_Table6(table6_rec_new)
            
            
        rowCount += 1    
