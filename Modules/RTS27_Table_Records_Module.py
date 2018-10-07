@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 import pymysql, sys
+import re
+from datetime import datetime
 from decimal import Decimal
 from  ProductClassification import AssetClassModule
 
@@ -15,6 +17,14 @@ class RTS27_Table2:
     INSTRUMENT_NAME = ""
     INSTRUMENT_CLASSIFICATION = ""
     CURRENCY = ""
+
+    # currency and value date attributes
+    CCY_PAIR = ""
+    CCY1 = ""
+    CCY2 = ""
+    VALUE_DATE = ""
+    TENOR = ""
+
     # CFI Codes
     CFI_ATTR_1_DESC = ""
     CFI_ATTR_2_DESC = ""
@@ -26,6 +36,8 @@ class RTS27_Table2:
     # ISDA Codes
     ISDA_ASSET_CLASS_ID = AssetClassModule.AssetClass.UNCLASSIFIED     ### 1 - stands for Unclassified
     ISDA_ASSET_CLASS_DESC = AssetClassModule.AssetClass.getDesc(AssetClassModule.AssetClass.UNCLASSIFIED)   ## Default should be UNCLASSIFIED
+
+    ccy_list_static = "(AFN|EUR|DZD|USD|AOA|XCD|ARS|AMD|AWG|AUD|AZN|BSD|BHD|BDT|BBD|BYN|BZD|XOF|BMD|INR|BTN|BOB|BOV|BAM|BWP|NOK|BRL|BND|BGN|BIF|CVE|KHR|XAF|CAD|KYD|CLP|CLF|CNY|COP|COU|KMF|CDF|NZD|CRC|HRK|CUP|CUC|ANG|CZK|DKK|DJF|DOP|EGP|SVC|ERN|ETB|FKP|FJD|XPF|GMD|GEL|GHS|GIP|GTQ|GBP|GNF|GYD|HTG|HNL|HKD|HUF|ISK|IDR|XDR|IRR|IQD|ILS|JMD|JPY|JOD|KZT|KES|KPW|KRW|KWD|KGS|LAK|LBP|LSL|ZAR|LRD|LYD|CHF|MOP|MKD|MGA|MWK|MYR|MVR|MRU|MUR|XUA|MXN|MXV|MDL|MNT|MAD|MZN|MMK|NAD|NPR|NIO|NGN|OMR|PKR|PAB|PGK|PYG|PEN|PHP|PLN|QAR|RON|RUB|RWF|SHP|WST|STN|SAR|RSD|SCR|SLL|SGD|XSU|SBD|SOS|SSP|LKR|SDG|SRD|SZL|SEK|CHE|CHW|SYP|TWD|TJS|TZS|THB|TOP|TTD|TND|TRY|TMT|UGX|UAH|AED|USN|UYU|UYI|UYW|UZS|VUV|VES|VND|YER|ZMW|ZWL|XBA|XBB|XBC|XBD|XTS|XAU|XPD|XPT|XAG)"
 
     def setAttributes(self, SOURCE_COMPANY_NAME, FILENAME,FILE_ID , ISIN, TRADE_DATE, VENUE, INSTRUMENT_NAME, INSTRUMENT_CLASSIFICATION, CURRENCY):
         self.SOURCE_COMPANY_NAME = SOURCE_COMPANY_NAME
@@ -59,6 +71,36 @@ class RTS27_Table2:
     def setInstrumentName(self, INSTRUMENT_NAME):
         self.INSTRUMENT_NAME = INSTRUMENT_NAME[:255]
 
+        if (self.INSTRUMENT_NAME!=""):
+            regex1 = r" " + self.ccy_list_static + self.ccy_list_static + " "
+            regex2 = r" " + self.ccy_list_static + " " + self.ccy_list_static + " "
+            regex3 = r"[0-9]{8}"
+
+            match1 = re.search(regex1, self.INSTRUMENT_NAME.upper())
+            if (match1 is not None):
+                self.CCY1 = self.INSTRUMENT_NAME[match1.start():match1.start()+4]
+                self.CCY2 = self.INSTRUMENT_NAME[match1.start()+4:match1.start()+7]
+                print self.INSTRUMENT_NAME[match1.start():match1.end()]
+
+            match2 = re.search(regex2, self.INSTRUMENT_NAME.upper())
+            if (match2 is not None):
+                self.CCY1 = self.INSTRUMENT_NAME[match2.start():match2.start() + 4]
+                self.CCY2 = self.INSTRUMENT_NAME[match2.start() + 5:match2.start() + 8]
+
+            self.CCY_PAIR = min(self.CCY1,self.CCY2) + max(self.CCY1,self.CCY2)
+
+            match3 = re.search(regex3, self.INSTRUMENT_NAME.upper())
+            if (match3 is not None):
+                val_date = self.INSTRUMENT_NAME[match3.start():match3.end()]
+                rawdate = datetime.strptime(val_date, '%Y%m%d')
+                self.VALUE_DATE = datetime.strftime(rawdate, "%Y-%m-%d")
+
+                self.TENOR = self.getTenor(self.TRADE_DATE,self.VALUE_DATE)
+
+            #print ("CCY1:" + self.CCY1 + ", CCY2:" + self.CCY2 + ", CCYPAIR:" + self.CCY_PAIR + ", VALUE DATE " +
+            #       self.VALUE_DATE + ", TRADE DATE:"+ self.TRADE_DATE +", TENOR:" + self.TENOR)
+
+
     def setInstrumentClassification(self, INSTRUMENT_CLASSIFICATION,cfi_assetclass_map,cfi_char_map):
         self.INSTRUMENT_CLASSIFICATION = INSTRUMENT_CLASSIFICATION.upper()
 
@@ -66,22 +108,82 @@ class RTS27_Table2:
         self.ISDA_ASSET_CLASS_DESC = AssetClassModule.AssetClass.getDesc(self.ISDA_ASSET_CLASS_ID)
 
         cfi_group = (self.INSTRUMENT_CLASSIFICATION[:2]).upper()
-        self.setCFIAttr(cfi_assetclass_map[cfi_group][0], "ATTR_1" )
-        self.setCFIAttr(cfi_assetclass_map[cfi_group][1], "ATTR_2" )
-        self.setCFIAttr(self.getCFIAttr_3_Desc(cfi_char_map),"ATTR_3" )
-        self.setCFIAttr(self.getCFIAttr_4_Desc(cfi_char_map),"ATTR_4" )
-        self.setCFIAttr(self.getCFIAttr_5_Desc(cfi_char_map), "ATTR_5" )
-        self.setCFIAttr(self.getCFIAttr_6_Desc(cfi_char_map), "ATTR_6" )
+        if (self.INSTRUMENT_CLASSIFICATION!="" and self.INSTRUMENT_CLASSIFICATION!=' '):
+            self.setCFIAttr(cfi_assetclass_map[cfi_group][0], "ATTR_1" )
+            self.setCFIAttr(cfi_assetclass_map[cfi_group][1], "ATTR_2" )
+            self.setCFIAttr(self.getCFIAttr_3_Desc(cfi_char_map),"ATTR_3" )
+            self.setCFIAttr(self.getCFIAttr_4_Desc(cfi_char_map),"ATTR_4" )
+            self.setCFIAttr(self.getCFIAttr_5_Desc(cfi_char_map), "ATTR_5" )
+            self.setCFIAttr(self.getCFIAttr_6_Desc(cfi_char_map), "ATTR_6" )
 
     def setCurrency(self,  CURRENCY):
         self.CURRENCY = CURRENCY
+
+    def getTenor(self,  TRADE_DATE, VALUE_DATE):
+        tenor = ""
+        if (TRADE_DATE!="" and VALUE_DATE!=""):
+            days_diff = datetime.strptime(VALUE_DATE, "%Y-%m-%d") - datetime.strptime(TRADE_DATE, "%Y-%m-%d")
+
+            if ((days_diff.days >= 0) and (days_diff.days < 2)):
+                tenor = "O/N"
+            elif ((days_diff.days >= 2) and (days_diff.days < 8)):
+                tenor = "1W"
+            elif ((days_diff.days >= 8) and (days_diff.days < 15)):
+                tenor = "2W"
+            elif ((days_diff.days >= 15) and (days_diff.days < 32)):
+                tenor = "1M"
+            elif ((days_diff.days >= 32) and (days_diff.days < 64)):
+                tenor = "2M"
+            elif ((days_diff.days >= 64) and (days_diff.days < 91)):
+                tenor = "3M"
+            elif ((days_diff.days >= 91) and (days_diff.days < 183)):
+                tenor = "6M"
+            elif ((days_diff.days >= 183) and (days_diff.days < 275)):
+                tenor = "9M"
+            elif ((days_diff.days >= 275) and (days_diff.days < 367)):
+                tenor = "1Y"
+            elif ((days_diff.days >= 367) and (days_diff.days < 456)):
+                tenor = "15M"
+            elif ((days_diff.days >= 456) and (days_diff.days < 548)):
+                tenor = "18M"
+            elif ((days_diff.days >= 548) and (days_diff.days < 731)):
+                tenor = "2Y"
+            elif ((days_diff.days >= 731) and (days_diff.days < 1096)):
+                tenor = "3Y"
+            elif ((days_diff.days >= 1096) and (days_diff.days < 1461)):
+                tenor = "4Y"
+            elif ((days_diff.days >= 1461) and (days_diff.days < 1826)):
+                tenor = "5Y"
+            elif ((days_diff.days >= 1826) and (days_diff.days < 2191)):
+                tenor = "6Y"
+            elif ((days_diff.days >= 2191) and (days_diff.days < 2556)):
+                tenor = "7Y"
+            elif ((days_diff.days >= 2556) and (days_diff.days < 2921)):
+                tenor = "8Y"
+            elif ((days_diff.days >= 2921) and (days_diff.days < 3286)):
+                tenor = "9Y"
+            elif ((days_diff.days >= 3286) and (days_diff.days < 3651)):
+                tenor = "10Y"
+            elif ((days_diff.days >= 3651) and (days_diff.days < 5476)):
+                tenor = "15Y"
+            elif ((days_diff.days >= 5476) and (days_diff.days < 7301)):
+                tenor = "20Y"
+            elif ((days_diff.days >= 7301) and (days_diff.days < 9126)):
+                tenor = "25Y"
+            elif ((days_diff.days >= 9126) and (days_diff.days < 10951)):
+                tenor = "30Y"
+            else :
+                tenor = "UNCLASSIFIED"
+
+        return tenor
 
     def getAttrArray(self):
         single_record_array = [self.SOURCE_COMPANY_NAME, self.FILENAME, self.FILE_ID, self.ISIN, self.TRADE_DATE,
                                        self.VENUE, self.INSTRUMENT_NAME, self.INSTRUMENT_CLASSIFICATION, self.CURRENCY,
                                         str(self.ISDA_ASSET_CLASS_ID.value), self.ISDA_ASSET_CLASS_DESC, self.CFI_ATTR_1_DESC,
                                         self.CFI_ATTR_2_DESC,self.CFI_ATTR_3_DESC, self.CFI_ATTR_4_DESC,
-                                        self.CFI_ATTR_5_DESC, self.CFI_ATTR_6_DESC]
+                                        self.CFI_ATTR_5_DESC, self.CFI_ATTR_6_DESC, self.CCY1, self.CCY2, self.CCY_PAIR,
+                                        self.VALUE_DATE, self.TENOR]
         return single_record_array
 
     def setCFIAttr(self, cfi_attr_desc, cfi_attr_num ):
@@ -105,10 +207,12 @@ class RTS27_Table2:
 
     def getAssetClassEnum(self, cfi_assetclass_map):
         cfi_group = ""
-        if (self.INSTRUMENT_CLASSIFICATION != "") :
+        if (self.INSTRUMENT_CLASSIFICATION != "" and self.INSTRUMENT_CLASSIFICATION!=" ") :
             cfi_group = (self.INSTRUMENT_CLASSIFICATION[:2]).upper()
             asset_class_id = (int)(cfi_assetclass_map[cfi_group][2])
             return AssetClassModule.AssetClass(asset_class_id)
+        else:
+            return AssetClassModule.AssetClass.BLANK_AT_SOURCE
 
     def getCFIAttr_3_Desc(self, cfi_char_map):
         cfi_group = ""
@@ -430,9 +534,9 @@ class RTS27_Table1:
     OUTAGES_NUMBER=0
     OUTAGES_AVERAGE_DURATION=""
     SCHEDULED_AUCTION_NATURE=""
-    SCHEDULED_AUCTION_NUMBER=""
+    SCHEDULED_AUCTION_NUMBER=0
     SCHEDULED_AUCTION_AVERAGE_DURATION=""
-    FAILED_TRANSACTIONS_NUMBER=""
+    FAILED_TRANSACTIONS_NUMBER=0
     FAILED_TRANSACTIONS_PERCENT=0.00
     FILENAME=""
     FILE_ID=""
