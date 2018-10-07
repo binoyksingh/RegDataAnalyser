@@ -12,11 +12,15 @@ from datetime import datetime
 import RTS27_DB_Writer_Module
 import RTS27_Table_Records_Module
 rtsdb = RTS27_DB_Writer_Module.RTS27_DB_Writer()
+import RTS27_Prod_Class_DB_Reader_Module
+rts_db_rd = RTS27_Prod_Class_DB_Reader_Module.RTS27_Prod_Class_DB_Reader()
 
-filenameEOD = "/Users/lojinilogesparan/Documents/mifid_data/Nomura/BankEODReport-NBI_1q.csv"
-source_firm_name = "Nomura Bank International Plc"
-filename = "EODReport-NBI_1q.csv"
-dateformat =  '%m/%d/%Y' # '%m/%d/%Y for Bank NBI and %d/%m/%Y for Intl'
+
+filenameEOD = "/Users/lojinilogesparan/Documents/mifid_data/Nomura/Intl_EODReport-NIP_1q.csv"
+source_firm_name = "Nomura International Plc"
+source_firm_group_name = "Nomura"
+filename = "EODReport-NIP_1q"
+dateformat =  '%d/%m/%Y' # '%m/%d/%Y for Bank NBI and %d/%m/%Y for Intl'
 
 
 with open(filenameEOD, 'rb') as csvfile:
@@ -25,26 +29,48 @@ with open(filenameEOD, 'rb') as csvfile:
    for row in data:
        if rowCount > 0:
            print('Row='+str(rowCount))
+           # Extract date
+           rawdate = datetime.strptime(row[6],dateformat)
+           formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
+           
+           # ------------------------------
+           # Building Table 1 object
+           table1_rec = RTS27_Table_Records_Module.RTS27_Table1()
+           table1_rec.setTradeDate(formatted_date)
+           
+           table1_rec.setSourceCompanyCode(row[1])
+           table1_rec.setSourceCompanyGroupName(source_firm_group_name)
+           table1_rec.setSourceCompanyName(row[0])
+           table1_rec.setFileName(os.path.basename(filename))
+           table1_rec.setFailedTransactionsNumber('')
+          
            
            # ------------------------------
            # Building Table 2
            table2_rec = RTS27_Table_Records_Module.RTS27_Table2()
-           rawdate = datetime.strptime(row[6],dateformat)
-           formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
-           table2_rec.setFileId(source_firm_name + "_" + str(0))
            table2_rec.setInstrumentName(str(row[3]))
            table2_rec.setISIN(str(row[2]))
-           table2_rec.setInstrumentClassification(str(row[4]))
+           table2_rec.setInstrumentClassification(str(row[4]), rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
            table2_rec.setCurrency(str(row[5]))
            table2_rec.setSourceCompanyName(source_firm_name)
            table2_rec.setFileName(os.path.basename(filename))
            table2_rec.setTradeDate(formatted_date)
-           table2_rec.setFileId(source_firm_name)
+           table2_rec.setFileId(str(row[1]) + "_" + str(row[2])+ "_" + formatted_date+ "_" +str(row[5]))
            
            #print table2_rec.getAttrArray()
            
            # Writing to Table 2
            rtsdb.Write_to_Table2(table2_rec)
+           
+           
+           # Writing to Table 1 to Database
+           table1_rec.ISIN = table2_rec.ISIN
+           table1_rec.INSTRUMENT_CLASSIFICATION = table2_rec.INSTRUMENT_CLASSIFICATION
+           table1_rec.INSTRUMENT_NAME = table2_rec.INSTRUMENT_NAME
+           table1_rec.CURRENCY = table2_rec.CURRENCY
+           table1_rec.FILE_ID = table2_rec.FILE_ID
+           #print table1_rec.getAttrArrayTable1()
+           rtsdb.Write_to_Table1(table1_rec)
             
            # ------------------------------
            # Building Table 4
