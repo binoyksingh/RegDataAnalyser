@@ -18,6 +18,7 @@ newRecordCaptured = -1
 rowCount = 0   
 
 path = '/Users/lojinilogesparan/Documents/mifid_data/JPM/JPMorgan-ExecutionVenueReporting-RTS27-Q1-2018/'
+
 for foldername in os.listdir(path):
     if os.path.isdir(path+'/'+foldername):
         mainfilename = path+'/'+foldername
