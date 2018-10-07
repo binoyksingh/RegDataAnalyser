@@ -3,6 +3,7 @@ import glob
 import os
 import fnmatch
 from Modules import RTS27_DB_Writer_Module, RTS27_Table_Records_Module, RTS27_Utilities
+from Modules import RTS27_Prod_Class_DB_Reader_Module
 
 citi_source_path = "/Users/sarthakagarwal/PycharmProjects/UnZippedSource2"
 #filenames = sorted(glob.glob(hsbc_source_path+'/*.csv'))
@@ -14,8 +15,9 @@ for root, dirnames, filenames in os.walk(citi_source_path):
         citifilenames.append(os.path.join(root, filename))
 
 #citifilenames = citifilenames[0:100]
+rts_db_rd = RTS27_Prod_Class_DB_Reader_Module.RTS27_Prod_Class_DB_Reader()
 
-table_switches = RTS27_Utilities.RTS27_TableSwitches("N","Y","Y","N") #Table 1, Table 2, Table 3, and Table 4
+table_switches = RTS27_Utilities.RTS27_TableSwitches("Y","Y","Y","Y") #Table 1, Table 2, Table 4, and Table 6
 
 print ("Array Length is" + str(len(citifilenames)))
 fileId = 0
@@ -26,43 +28,16 @@ for filename in citifilenames:
    print("Percentage Complete : " + str(round((float(fileId)/float(len(citifilenames)) * 100),2)) + "%")
 
    # Table1 properties
-
-   # Resetting all the variables
-   table1_tradingday = ""
-   table1_isin = ""
-   table1_segement = ""
-   table1_currency = ""
-   table1_investmentFirm = ""
-   table1_dateProduced = ""
-   table1_dateofthetradingday = ""
-   table1_venuename = ""
-   table1_venue = ""
-   table1_countryofthecompetentauthority = ""
-   table1_marketsegementmic = ""
-   table1_marketsegement = ""
-   table1_outagesnature = ""
-   table1_outagesnumber = ""
-   table1_outagesaverageduration = ""
+   table1_rec = RTS27_Table_Records_Module.RTS27_Table1()
 
    # Table 2 properties
    table2_rec = RTS27_Table_Records_Module.RTS27_Table2()
-   #table2_isin =""
-   #table2_instrumentname = ""
-   #table2_instrumentclassification = ""
-   #table2_currency = ""
 
    # Table 4 properties
    table4_rec_new = RTS27_Table_Records_Module.RTS27_Table4()
 
    # Table 6 properties
    table6_rec = RTS27_Table_Records_Module.RTS27_Table6()
-
-   table6_numberofordersorrequest = ""
-   table6_numberoftransactionsexecuted = ""
-   table6_totalvalueoftransactionsexecuted = ""
-   table6_numberoftransactionscancelledorwithdrawn = ""
-   table6_numberoforderorrequestmodified = ""
-   table6_mediantransactionsize = ""
 
    with open(filename) as csvfile:
        readCSV = csv.reader(csvfile, delimiter=',')
@@ -72,36 +47,47 @@ for filename in citifilenames:
             if (len(row)>8):
                 # Populate Table1 properties
                 if (row[7] == "Investment Firm*"):
-                    table1_investmentFirm = row[8]
-
-                if (row[7] == "Date Produced*" ):
-                    table1_dateProduced = row[8]
+                    table1_rec.setSourceCompanyCode((str(row[8])).split(':')[1])
+                    table1_rec.setSourceCompanyGroupName("CITI")
 
                 if (row[7] == "Date of the Trading Day:" ):
-                    table1_dateofthetradingday= row[8]
+                    table1_rec.setTradeDate(row[8])
 
                 if (row[7] == "Venue Name:"):
-                    table1_venuename = row[8]
+                    table1_rec.setSourceCompanyName(row[8])
 
                 if (row[7] == "Venue (ISO 10383 Market Identifier Code (MIC) or Legal Entity Identifier (LEI)):"):
-                    table1_venue = row[8]
+                    table1_rec.setMarketSegmentID(row[8])
 
                 if (row[7] == "Country of Competent Authority:"):
-                    table1_countryofthecompetentauthority = row[8]
+                    table1_rec.setCountryOfCompetentAuthority(row[8])
 
                 if (row[7] == "Market Segment (ISO 10383 Market Segment MIC):"):
-                    table1_marketsegementmic = row[8]
+                    table1_rec.setMarketSegmentID(row[8])
 
                 if (row[7] == "Market Segment:"):
-                    table1_marketsegement = row[8]
+                    table1_rec.setMarketSegmentName(row[8])
 
-                if (row[7] == "Market Segment:"):
-                    table1_marketsegement = row[8]
+                if ("Instrument Identifier (ISO 6166):" in row[7] ):
+                    table1_rec.setISIN(row[8])
+
+                if ("Instrument Name:"  in row[7] ):
+                    table1_rec.setInstrumentName(row[8])
+
+                if ("Instrument Classification (ISO 10962 CFI Code):" in row[7]):
+                    table1_rec.setInstrumentClassification(row[8])
+
+                if ("Currency (ISO 4217):" in row[7]):
+                    table1_rec.setCurrency(row[8])
+
+                table1_rec.setFileName(os.path.basename(filename))
+                fileIdString = table1_rec.SOURCE_COMPANY_CODE +"_"+table1_rec.ISIN +"_"+table1_rec.TRADE_DATE +"_"+ table1_rec.CURRENCY+"_"+str(fileId)
+                table1_rec.setFileId(fileIdString)
 
                 # Populate Table2 properties
-                table2_rec.setSourceCompanyName(source_firm_name)
+                table2_rec.setSourceCompanyName(table1_rec.SOURCE_COMPANY_NAME)
                 table2_rec.setFileName(os.path.basename(filename))
-                table2_rec.setTradeDate(table1_dateofthetradingday)
+                table2_rec.setTradeDate(table1_rec.TRADE_DATE)
 
                 if ("Instrument Identifier (ISO 6166):" in row[7] ):
                     table2_rec.setISIN(row[8])
@@ -110,17 +96,18 @@ for filename in citifilenames:
                     table2_rec.setInstrumentName(row[8])
 
                 if ("Instrument Classification (ISO 10962 CFI Code):" in row[7]):
-                    table2_rec.setInstrumentClassification(row[8])
+                    print ( os.path.basename(filename) +"_"+row[8])
+                    table2_rec.setInstrumentClassification(row[8],rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
 
                 if ("Currency (ISO 4217):" in row[7]):
                     table2_rec.setCurrency(row[8])
 
-                table2_rec.setFileId(source_firm_name + "_" + table2_rec.ISIN)
+                table2_rec.setFileId(fileIdString)
 
                 # Populate Table4 properties
-                table4_rec_new.SOURCE_COMPANY_NAME = source_firm_name
+                table4_rec_new.SOURCE_COMPANY_NAME = table1_rec.SOURCE_COMPANY_NAME
                 table4_rec_new.FILENAME = os.path.basename(filename)
-                table4_rec_new.TRADE_DATE = table1_dateofthetradingday
+                table4_rec_new.TRADE_DATE = table1_rec.TRADE_DATE
                 table4_rec_new.FILE_ID = fileIdString
                 table4_rec_new.INSTRUMENT_NAME = table2_rec.INSTRUMENT_NAME
                 table4_rec_new.ISIN = table2_rec.ISIN
@@ -139,10 +126,10 @@ for filename in citifilenames:
                     table4_rec_new.setLowestExecutedPrice(row[8])
 
                 # Populate Table 6 properties
-                table6_rec.setSourceCompanyName(source_firm_name)
-                table6_rec.setFileId(source_firm_name + "_" + table2_rec.ISIN)
+                table6_rec.setSourceCompanyName(table1_rec.SOURCE_COMPANY_NAME)
+                table6_rec.setFileId(fileIdString)
                 table6_rec.setFileName(os.path.basename(filename))
-                table6_rec.setTradeDate(table1_dateofthetradingday)
+                table6_rec.setTradeDate(table1_rec.TRADE_DATE)
                 table6_rec.setISIN(table2_rec.ISIN)
                 table6_rec.setCurrency(table2_rec.CURRENCY)
                 table6_rec.setInstrumentName(table2_rec.INSTRUMENT_NAME)
@@ -172,7 +159,8 @@ for filename in citifilenames:
 
        # Printing output of Table 1
        if(table_switches.PROCESS_TABLE_1 == "Y"):
-            print("CITI" + ";" + fileIdString + ";" + table2_isin + ";" + table1_dateofthetradingday + ";" + table1_investmentFirm + ";" + table1_dateProduced + ";" + table1_venuename + ";" + table1_venue + ";" + table1_countryofthecompetentauthority + ";" + table1_marketsegementmic + ";" + table1_marketsegement)
+            # print (table2_rec.getAttrArray())
+            rtsdb.Write_to_Table1(table1_rec)
 
        # Printing output of Table 2
        if(table_switches.PROCESS_TABLE_2 == "Y"):
@@ -181,13 +169,12 @@ for filename in citifilenames:
 
        # Printing output of Table 4
        if(table_switches.PROCESS_TABLE_4 == "Y"):
-            rtsdb.Write_to_Table4(table4_rec_new)
+           rtsdb.Write_to_Table4(table4_rec_new)
 
        # Printing output of Table 6
        if(table_switches.PROCESS_TABLE_6 == "Y"):
             # print (table6_rec.getAttrArray())
             rtsdb.Write_to_Table6(table6_rec)
-            #print("CITI" + ";" + fileIdString + ";" + table2_isin + ";" + table1_dateofthetradingday + ";" + table1_venue + ";" + table6_numberofordersorrequest + ";" + table6_numberoftransactionsexecuted + ";" + table6_totalvalueoftransactionsexecuted + ";" + table6_numberoftransactionscancelledorwithdrawn + ";" + table6_numberoforderorrequestmodified + ";" + table6_mediantransactionsize + ";"+ table2_currency)
 
 
 
