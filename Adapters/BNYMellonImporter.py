@@ -61,15 +61,13 @@ for filename in bnymellonfilenames:
             table1_rec.setFileName(os.path.basename(filename))
             table1_rec.setFailedTransactionsNumber((wsheet.cell(row=8, column=2)).value)
 
-            if (table_switches.PROCESS_TABLE_1 == "Y") :
-                # Writing to Table 1 to Database
-                rtsdb.Write_to_Table1(table1_rec)
-
         if ((wsheet.cell(row=rowcount , column=2)).value == "Type of Financial Instrument"):
+
             CurrentFinancialInstrumentAtRow = rowcount
             # Found an instrument, now to build the objects
             # Building Table 2 object
             table2_rec = RTS27_Table_Records_Module.RTS27_Table2()
+            table2_rec.setTradeDate(formatted_date)
             table2_rec.setInstrumentName(str(str(wsheet.cell(row=rowcount+1 , column=2).value).decode('ascii', errors='ignore')))
             table2_rec.setISIN(str(wsheet.cell(row=rowcount+2 , column=2).value))
             table2_rec.setInstrumentClassification(str(wsheet.cell(row=rowcount+4 , column=2).value), rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
@@ -78,6 +76,7 @@ for filename in bnymellonfilenames:
             table2_rec.setSourceCompanyName(source_company_name)
             table2_rec.setFileName(os.path.basename(filename))
             table2_rec.setTradeDate(formatted_date)
+
             table2_rec.setFileId(company_code +"_"+ formatted_date +"_"+ table2_rec.ISIN + "_" + table2_rec.CURRENCY)
 
             # -----------------------------------------------------------
@@ -132,6 +131,12 @@ for filename in bnymellonfilenames:
 
             if (wsheet.cell(row=rowcount+37 , column=2).value is not None ) :
                 table6_rec_new.NUMBER_OF_DESIGNATED_MARKET_MAKER = str(wsheet.cell(row=rowcount+37 , column=2).value)
+
+            table1_rec.FILE_ID = table2_rec.FILE_ID
+
+            if (table_switches.PROCESS_TABLE_1 == "Y"):
+                # Writing to Table 1 to Database
+                rtsdb.Write_to_Table1(table1_rec)
 
             if (table_switches.PROCESS_TABLE_2 == "Y") :
                 # Writing to Table 2 to Database
