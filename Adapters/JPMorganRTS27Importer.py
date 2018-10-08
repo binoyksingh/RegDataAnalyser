@@ -22,6 +22,7 @@ newTradeID = 0
 source_firm_group_name = 'JPMorgan'
 
 path = '/Users/lojinilogesparan/Documents/mifid_data/JPM/JPMorgan-ExecutionVenueReporting-RTS27-Q1-2018/'
+
 for foldername in os.listdir(path):
     if os.path.isdir(path+'/'+foldername):
         mainfilename = path+'/'+foldername

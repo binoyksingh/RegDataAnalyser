@@ -21,7 +21,7 @@ rts_db_rd = RTS27_Prod_Class_DB_Reader_Module.RTS27_Prod_Class_DB_Reader()
 hsbcfilenames = sorted(glob.glob(hsbc_source_path+'/*.csv'))
 rtsdb = RTS27_DB_Writer_Module.RTS27_DB_Writer()
 
-table_switches = RTS27_Utilities.RTS27_TableSwitches("Y","N","N","N") #Table 1, Table 2, Table 4, and Table 6
+table_switches = RTS27_Utilities.RTS27_TableSwitches("Y","Y","Y","Y") #Table 1, Table 2, Table 4, and Table 6
 
 #filenames = filenames[0:len(filenames)
 # hsbcfilenames = hsbcfilenames[0:3]
@@ -84,11 +84,11 @@ for filename in hsbcfilenames:
                     table2_rec.setFileName(os.path.basename(filename))
                     rawdate = datetime.strptime(row[0], '%d/%m/%Y')
                     formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
+                    table2_rec.setTradeDate(formatted_date)
                     table2_rec.setInstrumentName(str(row[1]).decode('ascii', errors='ignore'))
                     table2_rec.setISIN(row[2])
                     table2_rec.setInstrumentClassification(row[4],rts_db_rd.getCfi_assetclass_map(),rts_db_rd.getCfi_char_map())
                     table2_rec.setCurrency(row[5])
-                    table2_rec.setTradeDate(formatted_date)
                     table2_rec.setVenue("") # Since HSBC does not provide this Info...
                     table2_rec.setFileId(source_company_name+"_"+table2_rec.TRADE_DATE+"_"+table2_rec.ISIN+"_"+table2_rec.CURRENCY )
 

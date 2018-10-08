@@ -20,21 +20,48 @@ def processFinancialInstrument (buffer, header_str, rtsdb, rts_db_rd,fileId) :
     headerXML = ET.fromstring(header_str)
 
     trade_date = (headerXML.findall('DtTrdDay')[0].text).encode('utf-8', errors='ignore')
+    source_firm_name = (headerXML.findall('VnNm')[0].text).encode('utf-8', errors='ignore')
+    venue_code = (headerXML.findall('VnCd')[0].text).encode('utf-8', errors='ignore')
+    country_of_competent_authority = (headerXML.findall('CtryCompAuth')[0].text).encode('utf-8', errors='ignore')
+    market_segement_code = (headerXML.findall('MktSgmt')[0].text).encode('utf-8', errors='ignore')
+    market_segement_name = (headerXML.findall('MktSgmtNm')[0].text).encode('utf-8', errors='ignore')
+
     venue = (headerXML.findall('MktSgmt')[0].text).encode('utf-8', errors='ignore')
     financialInstrument = ET.fromstring(buffer)
-    # financialInstruments = mydoc.getElementsByTagName('FinInstrument')
+
+    table1_rec = RTS27_Table_Records_Module.RTS27_Table1()
     table2_rec = RTS27_Table_Records_Module.RTS27_Table2()
     table4_rec = RTS27_Table_Records_Module.RTS27_Table4()
     table6_rec = RTS27_Table_Records_Module.RTS27_Table6()
 
     ## -----------
-    ## Building Table 2
+    ## Building Table 1
+    table1_rec.setSourceCompanyName(source_firm_name)
+    table1_rec.setSourceCompanyGroupName(source_group_name)
+    table1_rec.setSourceCompanyCode(venue_code)
+    table1_rec.setCountryOfCompetentAuthority(country_of_competent_authority)
+    table1_rec.setMarketSegmentName(market_segement_name)
+    table1_rec.setMarketSegmentID(market_segement_code)
+    table1_rec.setTradeDate(trade_date)
+    table1_rec.setOutagesNumber(0) # DB doesnt provide this value
+    table1_rec.setScheduledAutionNature(0) # DB doesnt provide this value
+    table1_rec.setScheduledAutionNumber(0) # DB doesnt provide this value
+    table1_rec.setFailedTransactionsNumber(0) # DB doesnt provide this value
+    table1_rec.setCurrency((financialInstrument.findall("Ccy")[0].text).encode('utf-8', errors='ignore'))
+    table1_rec.setISIN((financialInstrument.findall("FinInstr")[0].text).encode('utf-8', errors='ignore'))
+    table1_rec.setInstrumentName((financialInstrument.findall("FinInstrNm")[0].text).encode('utf-8', errors='ignore'))
+    table1_rec.setFileName(os.path.basename(filename))
+    table1_rec.setInstrumentClassification((financialInstrument.findall("CFICd")[0].text).encode('utf-8', errors='ignore'))
+    fileIdStr = table1_rec.SOURCE_COMPANY_CODE+"_"+table1_rec.MARKET_SEGMENT_ID+"_"+table1_rec.TRADE_DATE+"_"+table1_rec.ISIN+"_"+table1_rec.CURRENCY
+    table1_rec.setFileId(fileIdStr)
 
+    ## -----------
+    ## Building Table 2
     table2_rec.setTradeDate(trade_date)
     table2_rec.setSourceCompanyName(source_firm_name)
     table2_rec.setFileName(os.path.basename(filename))
     table2_rec.setVenue(venue)
-    table2_rec.setFileId(source_firm_name + "_" + str(fileId))
+    table2_rec.setFileId(fileIdStr)
     table2_rec.setISIN(
         (financialInstrument.findall("FinInstr")[0].text).encode('utf-8', errors='ignore'))
     table2_rec.setInstrumentName(
@@ -50,7 +77,7 @@ def processFinancialInstrument (buffer, header_str, rtsdb, rts_db_rd,fileId) :
     table4_rec.setTradeDate(trade_date)
     table4_rec.setSourceCompanyName(source_firm_name)
     table4_rec.setFileName(os.path.basename(filename))
-    table4_rec.setFileId(source_firm_name + "_" + str(fileId))
+    table4_rec.setFileId(fileIdStr)
 
     table4_rec.setISIN(
         (financialInstrument.findall("FinInstr")[0].text).encode('utf-8', errors='ignore'))
@@ -60,6 +87,8 @@ def processFinancialInstrument (buffer, header_str, rtsdb, rts_db_rd,fileId) :
         table4_rec.setSimpleAverageTransactionPrice(
             (financialInstrument.findall("DaylyPric/SmplAvgTxPric")[0].text).encode('utf-8',
                                                                                                   errors='ignore'))
+    table4_rec.setCurrency(
+        (financialInstrument.findall("Ccy")[0].text).encode('utf-8', errors='ignore'))
 
     if (len(financialInstrument.findall("DaylyPric/VolWghTxPric")) > 0):
         table4_rec.setVolumeWeightedTransactionPrice(
@@ -82,7 +111,7 @@ def processFinancialInstrument (buffer, header_str, rtsdb, rts_db_rd,fileId) :
     table6_rec.setTradeDate(trade_date)
     table6_rec.setSourceCompanyName(source_firm_name)
     table6_rec.setFileName(os.path.basename(filename))
-    table6_rec.setFileId(source_firm_name + "_" + str(fileId))
+    table6_rec.setFileId(fileIdStr)
     table6_rec.setISIN(
         (financialInstrument.findall("FinInstr")[0].text).encode('utf-8', errors='ignore'))
 
@@ -119,17 +148,19 @@ def processFinancialInstrument (buffer, header_str, rtsdb, rts_db_rd,fileId) :
         table6_rec.setMedianSizeOfAllOrdersOrRequestsForQuote(
             (financialInstrument.findall("LkhdExec/MdnOrQtSize")[0].text).encode('utf-8',
                                                                                                 errors='ignore'))
+    table6_rec.setCurrency(
+        (financialInstrument.findall("Ccy")[0].text).encode('utf-8', errors='ignore'))
+
+    if (table_switches.PROCESS_TABLE_1 == "Y"):
+        rtsdb.Write_to_Table1(table1_rec)
 
     if (table_switches.PROCESS_TABLE_2 == "Y"):
-        #print (table2_rec.getAttrArray())
         rtsdb.Write_to_Table2(table2_rec)
 
     if (table_switches.PROCESS_TABLE_4 == "Y"):
-        #print (table4_rec.getAttrArray())
         rtsdb.Write_to_Table4(table4_rec)
 
     if (table_switches.PROCESS_TABLE_6 == "Y"):
-        #print (table6_rec.getAttrArray())
         rtsdb.Write_to_Table6(table6_rec)
 
 
@@ -142,10 +173,11 @@ for root, dirnames, filenames in os.walk(db_source_path):
     for filename in fnmatch.filter(filenames, '*.xml'):
         dbfilenames.append(os.path.join(root, filename))
 
-#dbfilenames = dbfilenames[0:1]
-source_firm_name = "DeutscheBankAG"
+#dbfilenames = dbfilenames[0:5]
+source_group_name = "DeutscheBankAG"
+source_firm_name = ""
 
-table_switches = RTS27_Utilities.RTS27_TableSwitches("N","Y","Y","Y") #Table 1, Table 2, Table 4, and Table 6
+table_switches = RTS27_Utilities.RTS27_TableSwitches("Y","Y","Y","Y") #Table 1, Table 2, Table 4, and Table 6
 
 fileId = 0
 list_of_table2_records = []
