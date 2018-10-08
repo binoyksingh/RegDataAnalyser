@@ -43,6 +43,7 @@ for filename in os.listdir(path):
                 # trading date
                 rawdate = datetime.strptime(filename[-18:-8],dateformat)
                 formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
+                table2_rec.setTradeDate(formatted_date)
                 
                 for line in inputfile:
                     # Determine start and end of relevant tables
@@ -152,7 +153,6 @@ for filename in os.listdir(path):
                         table2_rec.setSourceCompanyName(source_firm_name)
                         table2_rec.setFileName(os.path.basename(filename))
                         table2_rec.setFileId(source_firm_name) 
-                        table2_rec.setTradeDate(formatted_date)
                         table2_rec.setFileId(table1_rec.SOURCE_COMPANY_CODE + "_" + formatted_date+ "_" + str(newTradeID))
                         
                         print table2_rec.getAttrArray()
