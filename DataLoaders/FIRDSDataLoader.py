@@ -8,12 +8,13 @@ import ast, codecs
 from Modules import RTS27_DB_Writer_Module, RTS27_Table_Records_Module, RTS27_Utilities
 from Modules import RTS27_Prod_Class_DB_Reader_Module
 from Modules import FIRDS_Data_Module
+from Modules import FIRDS_DB_Writer_Module
 import re
 import csv
+import zipfile
 
 
-def processFinancialInstrument (publish_date, filename, buffer) :
-    print buffer
+def processFinancialInstrument (publish_date, filename, buffer,db_writer) :
     #headerXML = ET.fromstring(buffer)
 
     firds_data_rec = FIRDS_Data_Module.FIRDS_Data()
@@ -22,26 +23,31 @@ def processFinancialInstrument (publish_date, filename, buffer) :
     firds_data_rec.setInstrumentFullName(find_between (buffer,"<FullNm>","</FullNm>"))
     firds_data_rec.setInstrumentClassification(find_between (buffer,"<ClssfctnTp>","</ClssfctnTp>"))
     firds_data_rec.setIssuerIdentifier(find_between (buffer,"<Issr>","</Issr>"))
-    firds_data_rec.setTradingVenue(find_between (buffer,"<Id>","</Id>"))
+    firds_data_rec.setTradingVenue(find_between (buffer,"<TradgVnRltdAttrbts><Id>","</Id>"))
     firds_data_rec.setInstrumentShortName(find_between (buffer,"<ShrtNm>","</ShrtNm>"))
-    firds_data_rec.setTerminationDate(find_between (buffer,"<TermntnDt>","</TermntnDt>"))
+    rawdate = find_between (buffer,"<TermntnDt>","</TermntnDt>")
+    t_loc = rawdate.find("T")
+    newdate = rawdate[:t_loc]
+    formatted_date = None
+    if (newdate!='' and newdate!=' '):
+        formatted_date = datetime.strptime(newdate, '%Y-%m-%d')
+    #formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
+    firds_data_rec.setTerminationDate(formatted_date)
     firds_data_rec.setNotionalCurrency1(find_between (buffer,"<NtnlCcy>","</NtnlCcy>"))
     firds_data_rec.setExpiryDate(find_between (buffer,"<XpryDt>","</XpryDt>"))
     firds_data_rec.setDeliveryType(find_between (buffer,"<DlvryTp>","</DlvryTp>"))
     firds_data_rec.setFXType(find_between (buffer,"<DlvryTp>","</DlvryTp>"))
     firds_data_rec.setUnderlyingISIN(find_between (buffer,"<ISIN>","</ISIN>"))
     firds_data_rec.setOptionType(find_between (buffer,"<OptnTp>","</OptnTp>"))
-    firds_data_rec.setStrikePriceAmt(find_between (buffer,"<Amt>","</Amt>"))
+    strikePriceAmt = find_between (buffer,"<Amt>","</Amt>")
+    firds_data_rec.setStrikePriceAmt(strikePriceAmt)
     firds_data_rec.setOptionExerciseStyle(find_between (buffer,"<OptnExrcStyle>","</OptnExrcStyle>"))
     firds_data_rec.setRelevantCompetentAuthrity(find_between (buffer,"<RlvntCmptntAuthrty>","</RlvntCmptntAuthrty>"))
+
     firds_data_rec.setFRDate(find_between (buffer,"<FrDt>","</FrDt>"))
     firds_data_rec.setFileName(filename)
 
-
-
-
-    print firds_data_rec.getAttrArray()
-
+    db_writer.Write_Data(firds_data_rec)
 
 
 def read_in_chunks(f, size=256):
@@ -61,43 +67,51 @@ def find_between( s, first, last ):
 
 firds_source_path = "/Users/sarthakagarwal/PycharmProjects/FIRDSData"
 
-firdsfilenames = []
+firds_db_writer = FIRDS_DB_Writer_Module.FIRDS_DB_Writer()
+
+firdszipfilenames = []
 for root, dirnames, filenames in os.walk(firds_source_path):
-    for filename in fnmatch.filter(filenames, '*.xml'):
-        firdsfilenames.append(os.path.join(root, filename))
+    for filename in fnmatch.filter(filenames, '*.zip'):
+        firdszipfilenames.append(os.path.join(root, filename))
 
-for filename in firdsfilenames:
+firdszipfilenames.sort()
+fileId = 0
+#firdszipfilenames = firdszipfilenames[0:5]
+for zipfilename in firdszipfilenames:
+    fileId = fileId + 1
+    print ("Processing file " + zipfilename + ", Percentage Complete : " + str(round((float(fileId) / float(len(firdszipfilenames)) * 100), 2)) + "%")
     #xml_file =  codecs.open(filename, 'r',encoding='utf-8')
-    esma_publish_date=filename.split("_")[1]
-    with open(filename) as inputfile:
+    zipfileObj = zipfile.ZipFile(zipfilename)
+    zipfileObj.extractall(os.path.dirname(zipfilename))
+    zipfileObj.close()
 
-        append = False
-        financial_instrument_count = 0
-        inputbuffer=""
-        for chunk in read_in_chunks(inputfile):
-                financial_instrument_count += 1
-                inputbuffer += chunk
-                fin_Instr_start_loc = inputbuffer.find("<FinInstrm>")
-                fin_Instr_end_loc = inputbuffer.find("</FinInstrm>")
+    firdsxmlfilenames = []
+    for root, dirnames, filenames in os.walk(firds_source_path):
+        for xmlfilename in fnmatch.filter(filenames, '*.xml'):
+            firdsxmlfilenames.append(os.path.join(root, xmlfilename))
 
-                # Check if there is completion of an element here
-                if (fin_Instr_end_loc != -1 and fin_Instr_start_loc!=-1):
-                    #Im assuming that if there is an end tag there will be a beginning tag also
-                    finInstr_string = inputbuffer[fin_Instr_start_loc:fin_Instr_end_loc + len("</FinInstrm>")]
-                    processFinancialInstrument(esma_publish_date,os.path.basename(filename),finInstr_string)
+    for xmlfilename in firdsxmlfilenames:
 
-                    append = False
-                    tempbuffer = inputbuffer[fin_Instr_end_loc + len("</FinInstrm>"):len(inputbuffer)]
-                    inputbuffer = tempbuffer
-                    print "tempbuffer is" + tempbuffer
-                    #financial_instrument_count +=1
-                    print "financial Instrument count" + str(financial_instrument_count)
+        esma_publish_date=xmlfilename.split("_")[1]
+        with open(xmlfilename) as inputfile:
+            append = False
+            financial_instrument_count = 0
+            inputbuffer=""
+            for chunk in read_in_chunks(inputfile):
+                    inputbuffer += chunk
+                    fin_Instr_start_loc = inputbuffer.find("<FinInstrm>")
+                    fin_Instr_end_loc = inputbuffer.find("</FinInstrm>")
 
+                    # Check if there is completion of an element here
+                    if (fin_Instr_end_loc != -1 and fin_Instr_start_loc!=-1):
+                        #Im assuming that if there is an end tag there will be a beginning tag also
+                        finInstr_string = inputbuffer[fin_Instr_start_loc:fin_Instr_end_loc + len("</FinInstrm>")]
+                        processFinancialInstrument(esma_publish_date,os.path.basename(filename),finInstr_string, firds_db_writer )
 
-                #elif append:
-                #    inputbuffer += chunk
+                        append = False
+                        tempbuffer = inputbuffer[fin_Instr_end_loc + len("</FinInstrm>"):len(inputbuffer)]
+                        inputbuffer = tempbuffer
+                        financial_instrument_count +=1
 
-                # Check if there is a new element starting here as well (because)
-                #if (fin_Instr_start_loc != -1 and append == False):
-                #        inputbuffer = chunk[fin_Instr_start_loc:len(chunk)]
-                #        append = True
+        # zip up the file again
+        os.remove(xmlfilename)
