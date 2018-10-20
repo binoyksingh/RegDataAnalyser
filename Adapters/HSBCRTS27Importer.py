@@ -48,7 +48,7 @@ for filename in hsbcfilenames:
                     # Printing output of Table 2
                     table1_rec = RTS27_Table_Records_Module.RTS27_Table1()
                     table1_rec.setSourceCompanyGroupName(source_firm_group_name)
-                    table1_rec.setSourceCompanyName(row[0])
+                    table1_rec.setSourceCompanyName(source_company_name)
                     table1_rec.setSourceCompanyCode(row[1])
                     table1_rec.setCountryOfCompetentAuthority(row[2])
                     table1_rec.setMarketSegmentName(row[3])
@@ -79,7 +79,7 @@ for filename in hsbcfilenames:
                 if (rowCount > 1) :
 
                     # Printing output of Table 2
-                    table2_rec = RTS27_Table_Records_Module.RTS27_Table2()
+                    table2_rec = RTS27_Table_Records_Module.RTS27_Table2(rts_db_rd.getCfi_assetclass_map(),rts_db_rd.getCfi_char_map())
                     table2_rec.setSourceCompanyName(source_company_name)
                     table2_rec.setFileName(os.path.basename(filename))
                     rawdate = datetime.strptime(row[0], '%d/%m/%Y')
@@ -87,7 +87,7 @@ for filename in hsbcfilenames:
                     table2_rec.setTradeDate(formatted_date)
                     table2_rec.setInstrumentName(str(row[1]).decode('ascii', errors='ignore'))
                     table2_rec.setISIN(row[2])
-                    table2_rec.setInstrumentClassification(row[4],rts_db_rd.getCfi_assetclass_map(),rts_db_rd.getCfi_char_map())
+                    table2_rec.setInstrumentClassification(row[4])
                     table2_rec.setCurrency(row[5])
                     table2_rec.setVenue("") # Since HSBC does not provide this Info...
                     table2_rec.setFileId(source_company_name+"_"+table2_rec.TRADE_DATE+"_"+table2_rec.ISIN+"_"+table2_rec.CURRENCY )

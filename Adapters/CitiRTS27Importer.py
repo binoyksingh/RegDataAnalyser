@@ -31,7 +31,7 @@ for filename in citifilenames:
    table1_rec = RTS27_Table_Records_Module.RTS27_Table1()
 
    # Table 2 properties
-   table2_rec = RTS27_Table_Records_Module.RTS27_Table2()
+   table2_rec = RTS27_Table_Records_Module.RTS27_Table2(rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
 
    # Table 4 properties
    table4_rec_new = RTS27_Table_Records_Module.RTS27_Table4()
@@ -96,8 +96,7 @@ for filename in citifilenames:
                     table2_rec.setInstrumentName(row[8])
 
                 if ("Instrument Classification (ISO 10962 CFI Code):" in row[7]):
-                    print ( os.path.basename(filename) +"_"+row[8])
-                    table2_rec.setInstrumentClassification(row[8],rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
+                    table2_rec.setInstrumentClassification(row[8])
 
                 if ("Currency (ISO 4217):" in row[7]):
                     table2_rec.setCurrency(row[8])

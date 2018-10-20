@@ -66,11 +66,11 @@ for filename in bnymellonfilenames:
             CurrentFinancialInstrumentAtRow = rowcount
             # Found an instrument, now to build the objects
             # Building Table 2 object
-            table2_rec = RTS27_Table_Records_Module.RTS27_Table2()
+            table2_rec = RTS27_Table_Records_Module.RTS27_Table2(rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
             table2_rec.setTradeDate(formatted_date)
             table2_rec.setInstrumentName(str(str(wsheet.cell(row=rowcount+1 , column=2).value).decode('ascii', errors='ignore')))
             table2_rec.setISIN(str(wsheet.cell(row=rowcount+2 , column=2).value))
-            table2_rec.setInstrumentClassification(str(wsheet.cell(row=rowcount+4 , column=2).value), rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
+            table2_rec.setInstrumentClassification(str(wsheet.cell(row=rowcount+4 , column=2).value))
             table2_rec.setCurrency(str(wsheet.cell(row=rowcount+5 , column=2).value))
 
             table2_rec.setSourceCompanyName(source_company_name)
