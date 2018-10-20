@@ -57,11 +57,11 @@ for foldername in os.listdir(path):
                                    # Building Table 2
                                    table2_rec = RTS27_Table_Records_Module.RTS27_Table2()   
                                    formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
+                                   table2_rec.setTradeDate(formatted_date)
                                    table2_rec.setInstrumentName(str(row[2]))
                                    table2_rec.setISIN(str(row[3]))
                                    table2_rec.setSourceCompanyName(source_firm_name)
                                    table2_rec.setFileName(os.path.basename(filename))
-                                   table2_rec.setTradeDate(formatted_date)
                                    
                                    # ------------------------------
                                    # Building Table 4
