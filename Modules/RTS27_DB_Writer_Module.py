@@ -24,6 +24,7 @@ class RTS27_DB_Writer:
         if (len(self.list_of_table2_records)!=0):
             print ("Some table2 records left..")
             # Insert Batch
+            self.Enrich_Table2_Objs()
             batch = []
             for rec in self.list_of_table2_records:
                 batch.append(rec.getAttrArray())
@@ -63,6 +64,9 @@ class RTS27_DB_Writer:
     def Write_to_Table2(self, table_2_record):
         self.list_of_table2_records.append(table_2_record)
         if (len(self.list_of_table2_records) == self.BATCH_SIZE) :
+            # enrich the objects
+            self.Enrich_Table2_Objs()
+
             # Insert Batch
             batch = []
             for rec in self.list_of_table2_records:
@@ -70,6 +74,36 @@ class RTS27_DB_Writer:
                 batch.append(single_record_array)
             self.Write_to_Table2_DB(batch)
             self.list_of_table2_records = []
+
+            # Write data to RTS27 Table 2
+
+    def Enrich_Table2_Objs(self):
+
+        isin_list_string=""
+        recNum = 0
+        for rec in self.list_of_table2_records:
+            recNum += 1
+            if (recNum!=len(self.list_of_table2_records)):
+                # If it's not last record
+                isin_list_string = isin_list_string + "'"+rec.ISIN+"',"
+            else :
+                # If it's the last record
+                isin_list_string = isin_list_string + "'" + rec.ISIN + "'"
+
+        get_uniq_ISIN_FIRDS = "SELECT ISIN,INSTRUMENT_FULL_NAME, INSTRUMENT_CLASSIFICATION, TERMINATION_DATE, EXPIRY_DATE," \
+                                     "ISSUER_IDENTIFIER from `UNIQUE_FIRDS_ISIN2` where ISIN in (" + isin_list_string + ")"
+        self.cursor.execute(get_uniq_ISIN_FIRDS)
+
+        myresult = self.cursor.fetchall()
+        isin_info_map = {}
+        for x in myresult:
+            isin_info_map[x[0]] = [x[1], x[2], x[3], x[4], x[5]]
+
+        for rec in self.list_of_table2_records:
+            isin_details = isin_info_map.get(rec.ISIN)
+            if (isin_details!=None):
+                rec.setInstrumentName(isin_details[0])
+                rec.setInstrumentClassification(isin_details[1])
 
     def Write_to_Table2_DB(self, batch):
 
