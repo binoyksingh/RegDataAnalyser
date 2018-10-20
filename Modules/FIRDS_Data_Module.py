@@ -21,6 +21,9 @@ class FIRDS_Data:
     STRIKE_PRICE_AMT=0.00
     OPTION_EXERCISE_STYLE=""
     RELEVANT_COMPETENT_AUTHORITY=""
+    DEBT_TOTAL_ISSUED_NOMINAL_AMOUNT=0
+    DEBT_MATURTY_DATE=""
+    DEBT_FIXED_RATE=""
     FR_DATE=""
     FILE_NAME=""
 
@@ -43,13 +46,18 @@ class FIRDS_Data:
         self.INSTRUMENT_SHORT_NAME = INSTRUMENT_SHORT_NAME
 
     def setTerminationDate(self, TERMINATION_DATE):
-        self.TERMINATION_DATE = TERMINATION_DATE
+        if (TERMINATION_DATE!=' ' and TERMINATION_DATE!=''):
+
+            self.TERMINATION_DATE = TERMINATION_DATE
 
     def setNotionalCurrency1(self, NOTIONAL_CURRENCY1):
         self.NOTIONAL_CURRENCY1 = NOTIONAL_CURRENCY1
 
     def setExpiryDate(self, EXPIRY_DATE):
-        self.EXPIRY_DATE = EXPIRY_DATE
+        self.EXPIRY_DATE = None
+        if (EXPIRY_DATE!='' and EXPIRY_DATE!=' '):
+            self.EXPIRY_DATE = EXPIRY_DATE
+
 
     def setDeliveryType(self, DELIVERY_DATE):
         self.DELIVERY_DATE = DELIVERY_DATE
@@ -63,8 +71,18 @@ class FIRDS_Data:
     def setOptionType(self, OPTION_TYPE):
         self.OPTION_TYPE = OPTION_TYPE
 
+    def is_number(self,s):
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
+
     def setStrikePriceAmt(self, STRIKE_PRICE_AMT):
-        self.STRIKE_PRICE_AMT = STRIKE_PRICE_AMT
+        if (STRIKE_PRICE_AMT!="" and STRIKE_PRICE_AMT!=" " and STRIKE_PRICE_AMT != "N/A" and self.is_number(STRIKE_PRICE_AMT)):
+            self.STRIKE_PRICE_AMT = STRIKE_PRICE_AMT
+        else :
+            self.STRIKE_PRICE_AMT = 0.0
 
     def setOptionExerciseStyle(self, OPTION_EXERCISE_STYLE):
         self.OPTION_EXERCISE_STYLE = OPTION_EXERCISE_STYLE
@@ -72,8 +90,22 @@ class FIRDS_Data:
     def setRelevantCompetentAuthrity(self, RELEVANT_COMPETENT_AUTHORITY):
         self.RELEVANT_COMPETENT_AUTHORITY = RELEVANT_COMPETENT_AUTHORITY
 
+    def setDebtTotalIssuedNominalAmount(self, DEBT_TOTAL_ISSUED_NOMINAL_AMOUNT):
+        if (DEBT_TOTAL_ISSUED_NOMINAL_AMOUNT!='' and DEBT_TOTAL_ISSUED_NOMINAL_AMOUNT!=' '):
+            self.DEBT_TOTAL_ISSUED_NOMINAL_AMOUNT = int(DEBT_TOTAL_ISSUED_NOMINAL_AMOUNT)
+
+    def setDebtMaturityDate(self, DEBT_MATURTY_DATE):
+        self.DEBT_MATURTY_DATE = None
+        if (DEBT_MATURTY_DATE != '' and DEBT_MATURTY_DATE != ' '):
+            self.DEBT_MATURTY_DATE = DEBT_MATURTY_DATE
+
+    def setDebtFixedRate(self, DEBT_FIXED_RATE):
+        self.DEBT_FIXED_RATE = DEBT_FIXED_RATE
+
     def setFRDate(self, FR_DATE):
-        self.FR_DATE = FR_DATE
+        self.FR_DATE = None
+        if (FR_DATE != '' and FR_DATE != ' '):
+            self.FR_DATE = FR_DATE
 
     def setFileName(self, FILE_NAME):
         self.FILE_NAME = FILE_NAME
@@ -95,6 +127,9 @@ class FIRDS_Data:
                                 self.STRIKE_PRICE_AMT,
                                 self.OPTION_EXERCISE_STYLE,
                                 self.RELEVANT_COMPETENT_AUTHORITY,
+                                self.DEBT_TOTAL_ISSUED_NOMINAL_AMOUNT,
+                                self.DEBT_MATURTY_DATE,
+                                self.DEBT_FIXED_RATE,
                                 self.FR_DATE,
                                 self.FILE_NAME
                             ]
