@@ -12,7 +12,7 @@ from Modules import RTS27_LEI_Company_Map_Module
 # ISIN
 # Trade Date
 # CCY
-# Test - Binoy
+# Test - Binoynnn
 
 bnymellon_source_path = "/Users/sarthakagarwal/PycharmProjects/MifidDataAnalyser/Source/BNYMellon/Unzipped source"
 #bnymellonfilenames = sorted(glob.iglob(bnymellon_source_path+'/**/*.xslx',recursive=True))
