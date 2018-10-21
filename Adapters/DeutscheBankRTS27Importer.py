@@ -30,7 +30,7 @@ def processFinancialInstrument (buffer, header_str, rtsdb, rts_db_rd,fileId) :
     financialInstrument = ET.fromstring(buffer)
 
     table1_rec = RTS27_Table_Records_Module.RTS27_Table1()
-    table2_rec = RTS27_Table_Records_Module.RTS27_Table2()
+    table2_rec = RTS27_Table_Records_Module.RTS27_Table2(rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
     table4_rec = RTS27_Table_Records_Module.RTS27_Table4()
     table6_rec = RTS27_Table_Records_Module.RTS27_Table6()
 
@@ -67,7 +67,7 @@ def processFinancialInstrument (buffer, header_str, rtsdb, rts_db_rd,fileId) :
     table2_rec.setInstrumentName(
         (financialInstrument.findall("FinInstrNm")[0].text).encode('utf-8', errors='ignore'))
     table2_rec.setInstrumentClassification(
-        (financialInstrument.findall("CFICd")[0].text).encode('utf-8', errors='ignore'), rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
+        (financialInstrument.findall("CFICd")[0].text).encode('utf-8', errors='ignore'))
     table2_rec.setCurrency(
         (financialInstrument.findall("Ccy")[0].text).encode('utf-8', errors='ignore'))
 
