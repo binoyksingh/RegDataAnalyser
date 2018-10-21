@@ -47,11 +47,11 @@ with open(filenameEOD, 'rb') as csvfile:
            
            # ------------------------------
            # Building Table 2
-           table2_rec = RTS27_Table_Records_Module.RTS27_Table2()
+           table2_rec = RTS27_Table_Records_Module.RTS27_Table2(rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
            table2_rec.setTradeDate(formatted_date)
            table2_rec.setInstrumentName(str(row[3]))
            table2_rec.setISIN(str(row[2]))
-           table2_rec.setInstrumentClassification(str(row[4]), rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
+           table2_rec.setInstrumentClassification(str(row[4]))
            table2_rec.setCurrency(str(row[5]))
            table2_rec.setSourceCompanyName(source_firm_name)
            table2_rec.setFileName(os.path.basename(filename))

@@ -55,7 +55,7 @@ for foldername in os.listdir(path):
                                    newTradeID += 1
                                    
                                    # Building Table 2
-                                   table2_rec = RTS27_Table_Records_Module.RTS27_Table2()   
+                                   table2_rec = RTS27_Table_Records_Module.RTS27_Table2(rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
                                    formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
                                    table2_rec.setTradeDate(formatted_date)
                                    table2_rec.setInstrumentName(str(row[2]))
@@ -113,7 +113,7 @@ for foldername in os.listdir(path):
                                
                                # Table 2
                                if row[1] == 'Instrument classification':
-                                   table2_rec.setInstrumentClassification(str(row[2]), rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
+                                   table2_rec.setInstrumentClassification(str(row[2]))
                                if row[1] == 'Currency':
                                    table2_rec.setCurrency(str(row[2]))
                                
