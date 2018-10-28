@@ -23,12 +23,12 @@ for root, dirnames, filenames in os.walk(bnymellon_source_path):
     for filename in fnmatch.filter(filenames, '*.xlsx'):
         bnymellonfilenames.append(os.path.join(root, filename))
 
-#bnymellonfilenames = bnymellonfilenames[0:3]
+bnymellonfilenames = bnymellonfilenames[0:3]
 source_firm_group_name = "BNYMellon"
 source_company_name=""
 rts_db_rd = RTS27_Prod_Class_DB_Reader_Module.RTS27_Prod_Class_DB_Reader()
 
-table_switches = RTS27_Utilities.RTS27_TableSwitches("Y","Y","Y","Y") #Table 1, Table 2, Table 3, and Table 4
+table_switches = RTS27_Utilities.RTS27_TableSwitches("N","N","N","N") #Table 1, Table 2, Table 3, and Table 4
 
 fileId = 0
 list_of_table2_records = []

@@ -111,7 +111,8 @@ for filename in gsifilenames:
             if (rowCount > 1) :
 
                 table1_rec = RTS27_Table_Records_Module.RTS27_Table1()
-                table2_rec = RTS27_Table_Records_Module.RTS27_Table2()
+                table2_rec = RTS27_Table_Records_Module.RTS27_Table2(rts_db_rd.getCfi_assetclass_map(),
+                                                                     rts_db_rd.getCfi_char_map())
                 table4_rec = RTS27_Table_Records_Module.RTS27_Table4()
                 table6_rec = RTS27_Table_Records_Module.RTS27_Table6()
 
@@ -150,7 +151,7 @@ for filename in gsifilenames:
                 table2_rec.setFileName(os.path.basename(filename))
                 table2_rec.setInstrumentName(str(row[gsi_headers.index("Financial Instrument / Name")]))
                 table2_rec.setISIN(row[gsi_headers.index("Financial Instrument / Identifier (ISIN)")])
-                table2_rec.setInstrumentClassification(row[gsi_headers.index("Instrument Classification")],rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
+                table2_rec.setInstrumentClassification(row[gsi_headers.index("Instrument Classification")])
                 table2_rec.setCurrency(row[gsi_headers.index("Currency")])
                 table2_rec.setVenue(row[gsi_headers.index("Market Segment / Identifier")])
 

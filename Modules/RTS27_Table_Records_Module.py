@@ -72,9 +72,12 @@ class RTS27_Table2:
     def setVenue(self, VENUE):
         self.VENUE = VENUE
 
+    def setValueDate(self, VALUE_DATE):
+        self.VALUE_DATE = VALUE_DATE
+
     def setInstrumentName(self, INSTRUMENT_NAME):
         self.INSTRUMENT_NAME = INSTRUMENT_NAME[:255]
-
+        self.VALUE_DATE = None
         if (self.INSTRUMENT_NAME!=""):
             regex1 = r" " + self.ccy_list_static + self.ccy_list_static + " "
             regex2 = r" " + self.ccy_list_static + " " + self.ccy_list_static + " "
@@ -95,7 +98,6 @@ class RTS27_Table2:
             match3 = re.search(regex3, self.INSTRUMENT_NAME.upper())
             self.VALUE_DATE = None
             if (match3 is not None):
-                print "value date found in instrument name is " + self.INSTRUMENT_NAME[match3.start():match3.end()] + ",for insrtrument" + self.INSTRUMENT_NAME
                 val_date = self.INSTRUMENT_NAME[match3.start():match3.end()]
 
                 try:
@@ -104,11 +106,7 @@ class RTS27_Table2:
                     self.TENOR = self.getTenor(self.TRADE_DATE, self.VALUE_DATE)
 
                 except ValueError:
-                    print "value date found in instrument name is " + self.INSTRUMENT_NAME
-
-            #print ("CCY1:" + self.CCY1 + ", CCY2:" + self.CCY2 + ", CCYPAIR:" + self.CCY_PAIR + ", VALUE DATE " +
-            #       self.VALUE_DATE + ", TRADE DATE:"+ self.TRADE_DATE +", TENOR:" + self.TENOR)
-
+                    print "ValueError : value date found in instrument name is " + self.INSTRUMENT_NAME
 
     def setInstrumentClassification(self, INSTRUMENT_CLASSIFICATION):
         if ((self.cfi_assetclass_map!=None) and(self.cfi_char_map!=None)):
@@ -292,6 +290,31 @@ class RTS27_Table6:
     MEDIAN_SIZE_OF_ALL_ORDERS_OR_REQUESTS_FOR_QUOTE = 0.0
     NUMBER_OF_DESIGNATED_MARKET_MAKER = 0.0
     CURRENCY = ""
+
+    def key_fields_blank(self):
+        keyFieldsBlank = True
+        if (self.NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE != 0.0 and self.NUMBER_OF_ORDER_OR_REQUEST_FOR_QUOTE!='0') :
+            keyFieldsBlank = False
+
+        elif  (self.NUMBER_OF_TRANSACTIONS_EXECUTED != 0 and self.NUMBER_OF_TRANSACTIONS_EXECUTED!='0')  :
+            keyFieldsBlank = False
+
+        elif (self.TOTAL_VALUE_OF_TRANSACTIONS_EXECUTED != 0 and self.TOTAL_VALUE_OF_TRANSACTIONS_EXECUTED != '0' ):
+            keyFieldsBlank = False
+
+        elif (self.NUMBER_OF_ORDERS_OR_REQUEST_CANCELLED_OR_WITHDRAWN != 0 and self.NUMBER_OF_ORDERS_OR_REQUEST_CANCELLED_OR_WITHDRAWN!='0'):
+            keyFieldsBlank = False
+
+        elif (self.NUMBER_OF_ORDERS_OR_REQUEST_MODIFIED != 0 and  self.NUMBER_OF_ORDERS_OR_REQUEST_MODIFIED != '0'):
+            keyFieldsBlank = False
+
+        elif (self.MEDIAN_TRANSACTION_SIZE != 0.00 and self.MEDIAN_TRANSACTION_SIZE!='0'):
+            keyFieldsBlank = False
+
+        elif (self.MEDIAN_SIZE_OF_ALL_ORDERS_OR_REQUESTS_FOR_QUOTE != 0.0  and self.MEDIAN_SIZE_OF_ALL_ORDERS_OR_REQUESTS_FOR_QUOTE!='0'):
+            keyFieldsBlank = False
+
+        return keyFieldsBlank
 
     def is_number(self,s):
         try:
