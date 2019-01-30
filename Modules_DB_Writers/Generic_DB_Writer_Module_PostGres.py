@@ -25,7 +25,7 @@ class Generic_DB_Writer_Postgres:
         self.cursor = self.connection.cursor()
 
     def __del__(self):
-        print ('Generic_DB_Writer_Postgres:INIT:Calling destructor')
+        print ('Generic_DB_Writer_Postgres:INIT: Calling destructor')
         if (len(self.list_of_generic_records)!=0):
             print ("Some records left..")
             # Insert Batch
