@@ -1,8 +1,6 @@
 #!/usr/bin/python
 
-import pymysql, sys
-import ConfigParser
-from Generic_DB_Writer_Module import Generic_DB_Writer
+from Modules_DB_Writers.Generic_DB_Writer_Module import Generic_DB_Writer
 
 class FIRDS_DB_Writer(Generic_DB_Writer):
 

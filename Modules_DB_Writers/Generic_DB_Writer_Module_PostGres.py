@@ -3,12 +3,13 @@
 import sys
 import ConfigParser
 import psycopg2
+import psycopg2.extras
 
 
 class Generic_DB_Writer_Postgres:
 
     BATCH_SIZE = 5000
-    connection = psycopg2.Connection
+    connection = psycopg2._connect
     config = ConfigParser.ConfigParser()
 
     def __init__(self):
@@ -21,21 +22,22 @@ class Generic_DB_Writer_Postgres:
         DB_NAME_POSTGRES=self.config.get("DATABASE_DETAILS","DATABASE_NAME_POSTGRES")
 
         self.list_of_generic_records = []
-        self.connection = psycopg2.connect(host=DB_HOSTNAME_POSTGRES, user=DB_USER_POSTGRES, password=DB_PASSWORD_POSTGRES, db=DB_NAME_POSTGRES)
+        self.connection = psycopg2.connect(host=DB_HOSTNAME_POSTGRES, user=DB_USER_POSTGRES, password=DB_PASSWORD_POSTGRES, dbname=DB_NAME_POSTGRES)
+
+        self.connection.set_session(autocommit=True)
+
         self.cursor = self.connection.cursor()
 
     def __del__(self):
-        print ('Generic_DB_Writer_Postgres:INIT: Calling destructor')
+        print ('Generic_DB_Writer_Postgres:INIT:Calling destructor')
         if (len(self.list_of_generic_records)!=0):
-            print ("Some records left..")
             # Insert Batch
             batch = []
             for rec in self.list_of_generic_records:
                 batch.append(rec.getAttrArray())
-            self.Write_to_DB(batch)
+            self.Write_to_PostGresDB(batch)
             self.list_of_generic_records = []
         self.connection.close()
-
 
     # Write data
     def Write_Data(self, table_record):
@@ -45,13 +47,11 @@ class Generic_DB_Writer_Postgres:
             batch = []
             for rec in self.list_of_generic_records:
                 batch.append(rec.getAttrArray())
-            self.Write_to_DB(batch)
+            self.Write_to_PostGresDB(batch)
             self.list_of_generic_records = []
 
-    def Write_to_DB(self, batch):
+    def Write_to_PostGresDB(self, batch):
         insert_sql_string = self.getInsertSQLString()
-        self.cursor.executemany(insert_sql_string, batch)
-        self.connection.commit()
-        return;
+        psycopg2.extras.execute_values(self.cursor,insert_sql_string, batch)
 
 
