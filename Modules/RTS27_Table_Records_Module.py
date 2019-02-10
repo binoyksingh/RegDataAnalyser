@@ -698,3 +698,138 @@ class RTS27_Table1:
                                self.INSTRUMENT_CLASSIFICATION,
                                self.CURRENCY]
         return single_record_array
+
+class RTS27_Table3:
+        # Define list of attributes
+        TRADE_DATE = "" # Done
+        FILENAME = ""   # Done
+        FILE_ID = ""      # Done
+        ISIN = ""       # Done
+        CURRENCY = ""   # Done
+        INSTRUMENT_NAME = "" # Done
+        SIMPLE_AVERAGE_EXECUTED_PRICE=0.00 # Done
+        TOTAL_VALUE_EXECUTED=0 # Done
+        PRICE = 0.00 # Done
+        SIZE_RANGE="" # Done
+        TIME_OF_EXECUTION = "" # Done
+        TRANSACTION_SIZE= 0 # Done
+        TRADING_SYSTEM="" # Done
+        TRADING_MODE="" # Done
+        TRADING_PLATFORM="" # Done
+        BEST_BID_OFFER_OR_SUITABLE_REFERENCE="" # Done
+        DAY_TIME_BAND=""
+
+        SOURCE_COMPANY_GROUP_NAME = "" # Done
+        SOURCE_COMPANY_NAME = "" # Done
+        SOURCE_COMPANY_CODE = "" # Done
+
+        def setTradeDate(self, TRADE_DATE):
+            self.TRADE_DATE = TRADE_DATE
+
+        def is_number(self, s):
+            try:
+                float(s)
+                return True
+            except ValueError:
+                return False
+
+        def setSourceCompanyName(self, SOURCE_COMPANY_NAME):
+            self.SOURCE_COMPANY_NAME = SOURCE_COMPANY_NAME
+
+        def setSourceCompanyGroupName(self, SOURCE_COMPANY_GROUP_NAME):
+            self.SOURCE_COMPANY_GROUP_NAME = SOURCE_COMPANY_GROUP_NAME
+
+        def setSourceCompanyCode(self, SOURCE_COMPANY_CODE):
+            self.SOURCE_COMPANY_CODE = SOURCE_COMPANY_CODE
+
+        def setTotalValueExecuted(self, TOTAL_VALUE_EXECUTED):
+            if (TOTAL_VALUE_EXECUTED != "" and TOTAL_VALUE_EXECUTED != "N/A"
+                and TOTAL_VALUE_EXECUTED != " " and TOTAL_VALUE_EXECUTED != None and TOTAL_VALUE_EXECUTED != "NULL"):
+                if (self.is_number(TOTAL_VALUE_EXECUTED)):
+                    self.TOTAL_VALUE_EXECUTED = TOTAL_VALUE_EXECUTED
+            else:
+                self.TOTAL_VALUE_EXECUTED = 0
+
+
+        def setTransactionSize(self, TRANSACTION_SIZE):
+            if (TRANSACTION_SIZE != "" and TRANSACTION_SIZE != "N/A"
+                and TRANSACTION_SIZE != " " and TRANSACTION_SIZE != None and TRANSACTION_SIZE != "NULL"):
+                if (self.is_number(TRANSACTION_SIZE)):
+                    self.TRANSACTION_SIZE = TRANSACTION_SIZE
+            else:
+                self.TRANSACTION_SIZE = 0
+
+        def setSimpleAverageExecutedPrice(self, SIMPLE_AVERAGE_EXECUTED_PRICE):
+            if (SIMPLE_AVERAGE_EXECUTED_PRICE != "" and SIMPLE_AVERAGE_EXECUTED_PRICE != "N/A" and SIMPLE_AVERAGE_EXECUTED_PRICE != "NULL"
+            and self.is_number(SIMPLE_AVERAGE_EXECUTED_PRICE)):
+                self.SIMPLE_AVERAGE_EXECUTED_PRICE = SIMPLE_AVERAGE_EXECUTED_PRICE
+            else:
+                self.SIMPLE_AVERAGE_EXECUTED_PRICE = 0.0
+
+        def setPrice(self, PRICE):
+            if (PRICE != "" and PRICE != "N/A" and PRICE != "NULL"
+            and self.is_number(PRICE)):
+                self.PRICE = PRICE
+            else:
+                self.PRICE = 0.0
+
+        def setCurrency(self, CURRENCY):
+            self.CURRENCY = CURRENCY
+
+        def setISIN(self, ISIN):
+            self.ISIN = ISIN
+
+        def setFileName(self, FILENAME):
+            self.FILENAME = FILENAME
+
+        def setFileId(self, FILE_ID):
+            self.FILE_ID = FILE_ID
+
+        def setInstrumentName(self, INSTRUMENT_NAME):
+            self.INSTRUMENT_NAME = INSTRUMENT_NAME
+
+        def setSizeRange(self, SIZE_RANGE):
+            self.SIZE_RANGE = SIZE_RANGE
+
+        def setTimeOfExecution(self, TIME_OF_EXECUTION):
+            self.TIME_OF_EXECUTION = TIME_OF_EXECUTION
+
+        def setTradingSystem(self, TRADING_SYSTEM):
+            self.TRADING_SYSTEM = TRADING_SYSTEM
+
+        def setTradingMode(self, TRADING_MODE):
+            self.TRADING_MODE = TRADING_MODE
+
+        def setTradingPlatform(self, TRADING_PLATFORM):
+            self.TRADING_PLATFORM = TRADING_PLATFORM
+
+        def setBestBidOfferOrSuitableRef(self, BEST_BID_OFFER_OR_SUITABLE_REFERENCE):
+            self.BEST_BID_OFFER_OR_SUITABLE_REFERENCE = BEST_BID_OFFER_OR_SUITABLE_REFERENCE
+
+        def setDayTimeBand(self, DAY_TIME_BAND):
+            self.DAY_TIME_BAND = DAY_TIME_BAND
+
+        def getAttrArrayTable1(self):
+            single_record_array = [
+                self.SOURCE_COMPANY_GROUP_NAME,
+                self.SOURCE_COMPANY_NAME,
+                self.SOURCE_COMPANY_CODE,
+                self.COUNTRY_OF_COMPETENT_AUTHORITY,
+                self.MARKET_SEGMENT_NAME,
+                self.MARKET_SEGMENT_ID,
+                self.TRADE_DATE,
+                self.OUTAGES_NATURE,
+                self.OUTAGES_NUMBER,
+                self.OUTAGES_AVERAGE_DURATION,
+                self.SCHEDULED_AUCTION_NATURE,
+                self.SCHEDULED_AUCTION_NUMBER,
+                self.SCHEDULED_AUCTION_AVERAGE_DURATION,
+                self.FAILED_TRANSACTIONS_NUMBER,
+                self.FAILED_TRANSACTIONS_PERCENT,
+                self.FILENAME,
+                self.FILE_ID,
+                self.ISIN,
+                self.INSTRUMENT_NAME,
+                self.INSTRUMENT_CLASSIFICATION,
+                self.CURRENCY]
+            return single_record_array
