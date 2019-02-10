@@ -1,0 +1,15 @@
+create table hist_market_data (
+   id  SERIAL PRIMARY KEY,
+   price_date date NOT NULL,
+   price_ts TIMESTAMP NULL,
+   currency_pair VARCHAR(50) NULL,
+   isin VARCHAR(50) NULL,
+   isin_desc VARCHAR(50) NULL,
+   isda_asset_class_id int,
+   isda_asset_class_desc VARCHAR(100) NULL,
+   fx_spot_price_open_bid_quote numeric(15,10) NULL,
+   fx_spot_price_close_bid_quote numeric(15,10) NULL,
+   mkt_data_detail text,
+   source_file_name varchar(100) NULL,
+   source_desc varchar(200)
+);
