@@ -1,13 +1,15 @@
 import csv
-import codecs
-import glob
-import os
 import fnmatch
 import logging
+import os
 import sys
 from datetime import datetime
-from Modules import RTS27_DB_Writer_Module, RTS27_Table_Records_Module, RTS27_Utilities
-from Modules import RTS27_Prod_Class_DB_Reader_Module
+
+from Modules import RTS27_Table_Records_Module
+from Modules_DB_Readers import RTS27_Prod_Class_DB_Reader_Module
+from Modules_DB_Writers import RTS27_DB_Writer_Module
+from Utilities import RTS27_Utilities
+
 
 def checkHeader (header):
     header_tokens = header[0].split(",")
@@ -72,7 +74,7 @@ rootLogger.addHandler(consoleHandler)
 
 rtsdb = RTS27_DB_Writer_Module.RTS27_DB_Writer()
 
-table_switches = RTS27_Utilities.RTS27_TableSwitches("Y","Y","Y","Y") #Table 1, Table 2, Table 4, and Table 6
+table_switches = RTS27_Utilities.RTS27_TableSwitches("Y", "Y", "Y", "Y") #Table 1, Table 2, Table 4, and Table 6
 
 gsifilenames = []
 for root, dirnames, filenames in os.walk(gsi_source_path):

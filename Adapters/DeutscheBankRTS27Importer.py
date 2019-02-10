@@ -1,12 +1,12 @@
 import fnmatch
 import os
-from datetime import datetime
-from openpyxl import load_workbook
-from xml.dom import minidom
 import xml.etree.ElementTree as ET
-import ast, codecs
-from Modules import RTS27_DB_Writer_Module, RTS27_Table_Records_Module, RTS27_Utilities
-from Modules import RTS27_Prod_Class_DB_Reader_Module
+
+from Modules import RTS27_Table_Records_Module
+from Modules_DB_Readers import RTS27_Prod_Class_DB_Reader_Module
+from Modules_DB_Writers import RTS27_DB_Writer_Module
+from Utilities import RTS27_Utilities
+
 
 def processHeader (buffer) :
     headerXML = ET.fromstring(buffer)
@@ -177,7 +177,7 @@ for root, dirnames, filenames in os.walk(db_source_path):
 source_group_name = "DeutscheBankAG"
 source_firm_name = ""
 
-table_switches = RTS27_Utilities.RTS27_TableSwitches("Y","Y","Y","Y") #Table 1, Table 2, Table 4, and Table 6
+table_switches = RTS27_Utilities.RTS27_TableSwitches("Y", "Y", "Y", "Y") #Table 1, Table 2, Table 4, and Table 6
 
 fileId = 0
 list_of_table2_records = []

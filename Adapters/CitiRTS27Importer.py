@@ -1,9 +1,11 @@
 import csv
-import glob
-import os
 import fnmatch
-from Modules import RTS27_DB_Writer_Module, RTS27_Table_Records_Module, RTS27_Utilities
-from Modules import RTS27_Prod_Class_DB_Reader_Module
+import os
+
+from Modules import RTS27_Table_Records_Module
+from Modules_DB_Readers import RTS27_Prod_Class_DB_Reader_Module
+from Modules_DB_Writers import RTS27_DB_Writer_Module
+from Utilities import RTS27_Utilities
 
 citi_source_path = "/Users/sarthakagarwal/PycharmProjects/UnZippedSource2"
 #filenames = sorted(glob.glob(hsbc_source_path+'/*.csv'))
@@ -17,7 +19,7 @@ for root, dirnames, filenames in os.walk(citi_source_path):
 #citifilenames = citifilenames[0:100]
 rts_db_rd = RTS27_Prod_Class_DB_Reader_Module.RTS27_Prod_Class_DB_Reader()
 
-table_switches = RTS27_Utilities.RTS27_TableSwitches("Y","Y","Y","Y") #Table 1, Table 2, Table 4, and Table 6
+table_switches = RTS27_Utilities.RTS27_TableSwitches("Y", "Y", "Y", "Y") #Table 1, Table 2, Table 4, and Table 6
 
 print ("Array Length is" + str(len(citifilenames)))
 fileId = 0

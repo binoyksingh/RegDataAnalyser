@@ -6,16 +6,19 @@ Created on Mon Sep  3 22:29:12 2018
 @author: lojinilogesparan
 """
 
+import collections
 import csv
+import fnmatch
 import os
 from datetime import datetime
-from Modules import RTS27_DB_Writer_Module, RTS27_Table_Records_Module, RTS27_Utilities
-from Modules import RTS27_Prod_Class_DB_Reader_Module
-from Modules import RTS27_LEI_Company_Map_Module
-from openpyxl import load_workbook
-import collections
 
-import fnmatch
+from openpyxl import load_workbook
+
+from Modules import RTS27_LEI_Company_Map_Module
+from Modules import RTS27_Table_Records_Module
+from Modules_DB_Readers import RTS27_Prod_Class_DB_Reader_Module
+from Modules_DB_Writers import RTS27_DB_Writer_Module
+
 
 def get_immediate_subdirectories(a_dir):
     return [name for name in os.listdir(a_dir)
