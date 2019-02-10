@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import pymysql, sys
-import RTS27_Table_Records_Module
+import Modules.RTS27_Table_Records_Module
 
 class RTS27_DB_Writer:
 
