@@ -5,7 +5,7 @@ import Modules.RTS27_Table_Records_Module
 
 class RTS27_DB_Writer:
 
-    BATCH_SIZE = 5000
+    BATCH_SIZE = 10
     connection = pymysql.Connection
 
     def __init__(self):
@@ -15,6 +15,7 @@ class RTS27_DB_Writer:
 
         self.list_of_table1_records = []
         self.list_of_table2_records = []
+        self.list_of_table3_records = []
         self.list_of_table6_records = []
         self.list_of_table4_records = []
         print ('RTS27_DB_WRITER:INIT:Connection Success')
@@ -58,6 +59,15 @@ class RTS27_DB_Writer:
             self.Write_to_Table1_DB(table1_batch)
             self.list_of_table1_records = []
 
+        if (len(self.list_of_table3_records)!=0):
+            print ("Some table3 records left..")
+            # Insert Batch
+            table3_batch = []
+            for table3_rec in self.list_of_table3_records:
+                table3_batch.append(table3_rec.getAttrArrayTable())
+            self.Write_to_Table3_DB(table3_batch)
+            self.list_of_table3_records = []
+
         self.connection.close()
 
     # Write data to RTS27 Table 2
@@ -76,6 +86,18 @@ class RTS27_DB_Writer:
             self.list_of_table2_records = []
 
             # Write data to RTS27 Table 2
+
+    # Write data to RTS27 Table 3
+    def Write_to_Table3(self, table_3_record):
+        self.list_of_table3_records.append(table_3_record)
+        if (len(self.list_of_table3_records) == self.BATCH_SIZE):
+            # Insert Batch
+            batch = []
+            for rec in self.list_of_table3_records:
+                single_record_array = rec.getAttrArrayTable()
+                batch.append(single_record_array)
+            self.Write_to_Table3_DB(batch)
+            self.list_of_table3_records = []
 
     def Enrich_Table2_Objs(self):
 
@@ -119,7 +141,21 @@ class RTS27_DB_Writer:
         self.connection.commit()
         return;
 
-# Write data to RTS27 Table 4
+    def Write_to_Table3_DB(self, batch):
+
+        # Printing output of Table 3
+        insert_rts27__table3_sql_string = "INSERT INTO `MIFID_RTS27_TABLE3` (`SOURCE_COMPANY_NAME`, `FILENAME`,`FILE_ID`,`ISIN`,`TRADE_DATE`,`INSTRUMENT_NAME`," \
+                                          "`CURRENCY`,`SIMPLE_AVG_EXECUTED_PRICE`,`TOTAL_VALUE_EXECUTED`,`PRICE`,`TIME_OF_EXECUTION_UTC`,`TRANSACTION_SIZE`," \
+                                          "`TRADING_SYSTEM`,`TRADING_MODE`,`TRADING_PLATFORM`,`BEST_BID_OFFER_OR_SUITABLE_REFERENCE`,`MID_MARKET_RATE`," \
+                                          "`MARKUP_AMOUNT`,`MARKUP_USD`) " \
+                                          " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+
+        print batch
+        self.cursor.executemany(insert_rts27__table3_sql_string, batch)
+        self.connection.commit()
+        return;
+
+    # Write data to RTS27 Table 4
     def Write_to_Table4(self, table_4_record):
         self.list_of_table4_records.append(table_4_record)
         if (len(self.list_of_table4_records) == self.BATCH_SIZE) :
