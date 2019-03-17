@@ -1,18 +1,13 @@
 import fnmatch
 import os
-from datetime import datetime
-from openpyxl import load_workbook
-from xml.dom import minidom
 import xml.etree.ElementTree as ET
-import ast, codecs
-from Modules import RTS27_DB_Writer_Module, RTS27_Table_Records_Module, RTS27_Utilities
-from Modules import RTS27_Prod_Class_DB_Reader_Module
-from Modules import FIRDS_Data_Module
-from Modules import FIRDS_DB_Writer_Module
-import re
-import csv
 import zipfile
+from datetime import datetime
+
 import concurrent.futures
+
+from Modules import FIRDS_Data_Module
+from Modules_DB_Writers import FIRDS_DB_Writer_Module
 
 
 def processFinancialInstrument (publish_date, filename, buffer,db_writer) :
