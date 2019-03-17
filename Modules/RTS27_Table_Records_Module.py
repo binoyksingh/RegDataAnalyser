@@ -838,7 +838,7 @@ class RTS27_Table3:
 
             return time_in_utc.strftime('%Y-%m-%d %H:%M:%S')
 
-
+        # Table 3 - Get attr array function
         def getAttrArrayTable(self):
             single_record_array = [
                 self.SOURCE_COMPANY_NAME,
