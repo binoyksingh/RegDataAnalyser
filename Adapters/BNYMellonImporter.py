@@ -8,6 +8,7 @@ from Modules import RTS27_LEI_Company_Map_Module
 from Modules import RTS27_Table_Records_Module
 from Modules_DB_Readers import RTS27_Prod_Class_DB_Reader_Module
 from Modules_DB_Writers import RTS27_DB_Writer_Module
+from Modules_DB_Readers import HistMktData_DB_Reader_Module
 from Utilities import RTS27_Utilities
 
 #
@@ -18,21 +19,43 @@ from Utilities import RTS27_Utilities
 # CCY
 # Test - Binoynnn
 
+def getTable3_ObjectFromRow (rowId, wsheet,table2_rec) :
+    table3_rec_new = RTS27_Table_Records_Module.RTS27_Table3()
+    transaction_price = str(wsheet.cell(row=rowId, column=5).value)
+    time_of_execution = str(wsheet.cell(row=rowId, column=6).value)
+    transaction_size = str(wsheet.cell(row=rowId, column=7).value)
+
+    table3_rec_new.setSimpleAverageExecutedPrice(str(wsheet.cell(row=rowId, column=3).value))
+    table3_rec_new.setTotalValueExecuted(str(wsheet.cell(row=rowId, column=4).value))
+    table3_rec_new.setPrice(str(wsheet.cell(row=rowId, column=5).value))
+    table3_rec_new.setTimeOfExecution(str(wsheet.cell(row=rowId, column=6).value))
+    table3_rec_new.setTransactionSize(str(wsheet.cell(row=rowId, column=7).value))
+    table3_rec_new.setTradingSystem(str(wsheet.cell(row=rowId, column=8).value))
+    table3_rec_new.setTradingMode(str(wsheet.cell(row=rowId, column=9).value))
+    table3_rec_new.setTradingPlatform(str(wsheet.cell(row=rowId, column=10).value))
+
+    #if ( transaction_price != 'None' ):
+    #    print "For rowId" + str(rowId) + ", Transaction price : " + transaction_price + "; Time of Execution : " + time_of_execution
+    return table3_rec_new
+
 bnymellon_source_path = "/Users/sarthakagarwal/PycharmProjects/MifidDataAnalyser/Source/BNYMellon/Unzipped source"
 #bnymellonfilenames = sorted(glob.iglob(bnymellon_source_path+'/**/*.xslx',recursive=True))
 rtsdb = RTS27_DB_Writer_Module.RTS27_DB_Writer()
+histdata_db_reader = HistMktData_DB_Reader_Module.HistMktData_DB_Reader()
+
 
 bnymellonfilenames = []
 for root, dirnames, filenames in os.walk(bnymellon_source_path):
     for filename in fnmatch.filter(filenames, '*.xlsx'):
         bnymellonfilenames.append(os.path.join(root, filename))
 
-bnymellonfilenames = bnymellonfilenames[0:3]
+#bnymellonfilenames = bnymellonfilenames[0:3]
 source_firm_group_name = "BNYMellon"
 source_company_name=""
 rts_db_rd = RTS27_Prod_Class_DB_Reader_Module.RTS27_Prod_Class_DB_Reader()
+transaction_count = 0
 
-table_switches = RTS27_Utilities.RTS27_TableSwitches("N", "N", "N", "N") #Table 1, Table 2, Table 3, and Table 4
+table_switches = RTS27_Utilities.RTS27_TableSwitches("N", "N", "Y", "N", "N") #Table 1, Table 2, Table 3, Table 4, Table 6
 
 fileId = 0
 list_of_table2_records = []
@@ -138,6 +161,31 @@ for filename in bnymellonfilenames:
 
             table1_rec.FILE_ID = table2_rec.FILE_ID
 
+            # -----------------------------------------------------------
+            # Building Table 3
+            table3_records = []
+            for rowId in range(rowcount + 10, rowcount + 21):
+                table3_rec = getTable3_ObjectFromRow(rowId, wsheet, table2_rec)
+                if (table3_rec is not None and table3_rec.PRICE!= 'None' and table3_rec.PRICE!= 0.0):
+                    table3_rec.setISIN(table2_rec.ISIN)
+                    table3_rec.setSourceCompanyName(source_company_name)
+                    table3_rec.setSourceCompanyName(source_company_name)
+                    table3_rec.setFileName(os.path.basename(filename))
+                    table3_rec.setTradeDate(formatted_date)
+                    table3_rec.setFileId(table2_rec.FILE_ID)
+                    table3_rec.setInstrumentName(table2_rec.INSTRUMENT_NAME)
+                    table3_rec.setCurrency(table2_rec.CURRENCY)
+                    table3_records.append(table3_rec)
+                    print (table3_rec.getAttrArrayTable())
+                    transaction_count = transaction_count + 1
+
+                    histdata_db_reader.getFXFwdHistMktDataForCcy(table3_rec.CURRENCY,
+                                       table3_rec.getTimeOfExecutionInESTWithoutDayLightSavings())
+
+                    print "Count of transactions is " + str(transaction_count)
+
+            # -----------------------------------------------------------
+
             if (table_switches.PROCESS_TABLE_1 == "Y"):
                 # Writing to Table 1 to Database
                 rtsdb.Write_to_Table1(table1_rec)
@@ -145,6 +193,11 @@ for filename in bnymellonfilenames:
             if (table_switches.PROCESS_TABLE_2 == "Y") :
                 # Writing to Table 2 to Database
                 rtsdb.Write_to_Table2(table2_rec)
+
+            if (table_switches.PROCESS_TABLE_3 == "Y") :
+                # Writing to Table 3 to Database
+                for table3_rec_temp in table3_records:
+                    rtsdb.Write_to_Table3(table3_rec_temp)
 
             if (table_switches.PROCESS_TABLE_4 == "Y") :
                 # Writing to Table 4 to Database
