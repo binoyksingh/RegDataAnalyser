@@ -6,6 +6,7 @@ import pymysql, sys
 import re
 from datetime import datetime
 from decimal import Decimal
+from datetime import datetime, timedelta
 from  ProductClassification import AssetClassModule
 
 class RTS27_Table2:
@@ -723,6 +724,10 @@ class RTS27_Table3:
         SOURCE_COMPANY_NAME = "" # Done
         SOURCE_COMPANY_CODE = "" # Done
 
+        MID_MARKET_RATE = 0.0
+        MARKUP_AMOUNT = 0
+        MARKUP_USD = 0.0
+
         def setTradeDate(self, TRADE_DATE):
             self.TRADE_DATE = TRADE_DATE
 
@@ -809,27 +814,51 @@ class RTS27_Table3:
         def setDayTimeBand(self, DAY_TIME_BAND):
             self.DAY_TIME_BAND = DAY_TIME_BAND
 
-        def getAttrArrayTable1(self):
+        def setMidMarketRate(self, MID_MARKET_RATE):
+            self.MID_MARKET_RATE = MID_MARKET_RATE
+
+        def setMarkupAmount(self, MARKUP_AMOUNT):
+            self.MARKUP_AMOUNT = MARKUP_AMOUNT
+
+        def setMarkUpUSD(self, MARKUP_USD):
+            self.MARKUP_USD = MARKUP_USD
+
+        def getTimeOfExecutionInESTWithoutDayLightSavings(self):
+            time_of_execution = self.TRADE_DATE + " " +self.TIME_OF_EXECUTION
+
+            datetime_obj = datetime.strptime(time_of_execution, "%Y-%m-%d %H:%M:%S")
+            time_in_est_without_day_light_davings = datetime_obj - timedelta(hours=5)
+
+            return time_in_est_without_day_light_davings.strftime('%Y-%m-%d %H:%M:%S')
+
+        def getTimeOfExecutionInUTC(self):
+            time_of_execution = self.TRADE_DATE + " " +self.TIME_OF_EXECUTION
+
+            time_in_utc = datetime.strptime(time_of_execution, "%Y-%m-%d %H:%M:%S")
+
+            return time_in_utc.strftime('%Y-%m-%d %H:%M:%S')
+
+
+        def getAttrArrayTable(self):
             single_record_array = [
-                self.SOURCE_COMPANY_GROUP_NAME,
                 self.SOURCE_COMPANY_NAME,
-                self.SOURCE_COMPANY_CODE,
-                self.COUNTRY_OF_COMPETENT_AUTHORITY,
-                self.MARKET_SEGMENT_NAME,
-                self.MARKET_SEGMENT_ID,
-                self.TRADE_DATE,
-                self.OUTAGES_NATURE,
-                self.OUTAGES_NUMBER,
-                self.OUTAGES_AVERAGE_DURATION,
-                self.SCHEDULED_AUCTION_NATURE,
-                self.SCHEDULED_AUCTION_NUMBER,
-                self.SCHEDULED_AUCTION_AVERAGE_DURATION,
-                self.FAILED_TRANSACTIONS_NUMBER,
-                self.FAILED_TRANSACTIONS_PERCENT,
                 self.FILENAME,
                 self.FILE_ID,
                 self.ISIN,
+                self.TRADE_DATE,
                 self.INSTRUMENT_NAME,
-                self.INSTRUMENT_CLASSIFICATION,
-                self.CURRENCY]
+                self.CURRENCY,
+                self.SIMPLE_AVERAGE_EXECUTED_PRICE,
+                self.TOTAL_VALUE_EXECUTED,
+                self.PRICE,
+                self.getTimeOfExecutionInUTC(),
+                self.TRANSACTION_SIZE,
+                self.TRADING_SYSTEM,
+                self.TRADING_MODE,
+                self.TRADING_PLATFORM,
+                self.BEST_BID_OFFER_OR_SUITABLE_REFERENCE,
+                self.MID_MARKET_RATE,
+                self.MARKUP_AMOUNT,
+                self.MARKUP_USD
+            ]
             return single_record_array
