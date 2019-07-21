@@ -5,7 +5,7 @@ import Modules.RTS27_Table_Records_Module
 
 class RTS27_DB_Writer:
 
-    BATCH_SIZE = 10
+    BATCH_SIZE = 1000
     connection = pymysql.Connection
 
     def __init__(self):
@@ -145,12 +145,12 @@ class RTS27_DB_Writer:
 
         # Printing output of Table 3
         insert_rts27__table3_sql_string = "INSERT INTO `MIFID_RTS27_TABLE3` (`SOURCE_COMPANY_NAME`, `FILENAME`,`FILE_ID`,`ISIN`,`TRADE_DATE`,`INSTRUMENT_NAME`," \
-                                          "`CURRENCY`,`SIMPLE_AVG_EXECUTED_PRICE`,`TOTAL_VALUE_EXECUTED`,`PRICE`,`TIME_OF_EXECUTION_UTC`,`TRANSACTION_SIZE`," \
+                                          "`CURRENCY_PAIR`,`CURRENCY`,`TENOR_DAYS`,`SIMPLE_AVG_EXECUTED_PRICE`,`TOTAL_VALUE_EXECUTED`,`TCA_PERFORMED`,`RAW_PRICE`," \
+                                          "`CONVERTED_PRICE`,`TIME_OF_EXECUTION_UTC`,`TRANSACTION_SIZE`," \
                                           "`TRADING_SYSTEM`,`TRADING_MODE`,`TRADING_PLATFORM`,`BEST_BID_OFFER_OR_SUITABLE_REFERENCE`,`MID_MARKET_RATE`," \
-                                          "`MARKUP_AMOUNT`,`MARKUP_USD`) " \
-                                          " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                                          "`ABS_PRICE_DIFF`,`MARKUP_AMOUNT`,`MARKUP_USD`) " \
+                                          " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 
-        print batch
         self.cursor.executemany(insert_rts27__table3_sql_string, batch)
         self.connection.commit()
         return;
