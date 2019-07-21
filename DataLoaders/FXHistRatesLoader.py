@@ -7,11 +7,10 @@ Created on Tue Aug 21 21:31:35 2018
 """
 
 import csv
-import os
 from datetime import datetime
-from Modules import RTS27_Utilities
+
 from Modules import FX_HISTDATA_Module
-from Modules import FX_HISTDATA_DB_Writer_Module
+from Modules_DB_Writers import FX_HISTDATA_DB_Writer_Module
 
 fx_histdata_db_writer = FX_HISTDATA_DB_Writer_Module.FX_HIST_DATA_DB_WRITER()
 
@@ -36,6 +35,7 @@ with open(fx_rates_file, 'rb') as csvfile:
             fx_histdata_rec.setBaseCurrencyName(row[3])
             fx_histdata_rec.setUnitsPerBaseCcy(row[4])
             fx_histdata_rec.setRateDate(formatted_date)
+
 
             print fx_histdata_rec.getAttrArray()
 
