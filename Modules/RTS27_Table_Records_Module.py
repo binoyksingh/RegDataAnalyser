@@ -708,9 +708,12 @@ class RTS27_Table3:
         ISIN = ""       # Done
         CURRENCY = ""   # Done
         INSTRUMENT_NAME = "" # Done
+        CURRENCY_PAIR = ""
+        TENOR_DAYS = 0
         SIMPLE_AVERAGE_EXECUTED_PRICE=0.00 # Done
         TOTAL_VALUE_EXECUTED=0 # Done
         PRICE = 0.00 # Done
+        CONVERTED_PRICE = 0.00
         SIZE_RANGE="" # Done
         TIME_OF_EXECUTION = "" # Done
         TRANSACTION_SIZE= 0 # Done
@@ -725,8 +728,11 @@ class RTS27_Table3:
         SOURCE_COMPANY_CODE = "" # Done
 
         MID_MARKET_RATE = 0.0
+        ABS_PRICE_DIFF = 0.0
         MARKUP_AMOUNT = 0
         MARKUP_USD = 0.0
+
+        TCA_PERFORMED = 0
 
         def setTradeDate(self, TRADE_DATE):
             self.TRADE_DATE = TRADE_DATE
@@ -778,6 +784,20 @@ class RTS27_Table3:
             else:
                 self.PRICE = 0.0
 
+        def setConvertedPrice(self, CONVERTED_PRICE):
+            if (CONVERTED_PRICE != "" and CONVERTED_PRICE != "N/A" and CONVERTED_PRICE != "NULL"
+            and self.is_number(CONVERTED_PRICE)):
+                self.CONVERTED_PRICE = CONVERTED_PRICE
+            else:
+                self.CONVERTED_PRICE = 0.0
+
+        def setAbsPriceDiff(self, ABS_PRICE_DIFF):
+            if (ABS_PRICE_DIFF != "" and ABS_PRICE_DIFF != "N/A" and ABS_PRICE_DIFF != "NULL"
+            and self.is_number(ABS_PRICE_DIFF)):
+                self.ABS_PRICE_DIFF = ABS_PRICE_DIFF
+            else:
+                self.ABS_PRICE_DIFF = 0.0
+
         def setCurrency(self, CURRENCY):
             self.CURRENCY = CURRENCY
 
@@ -792,6 +812,12 @@ class RTS27_Table3:
 
         def setInstrumentName(self, INSTRUMENT_NAME):
             self.INSTRUMENT_NAME = INSTRUMENT_NAME
+
+        def setCurrencyPair(self, CURRENCY_PAIR):
+            self.CURRENCY_PAIR = CURRENCY_PAIR
+
+        def setTenorDays(self, TENOR_DAYS):
+            self.TENOR_DAYS = TENOR_DAYS
 
         def setSizeRange(self, SIZE_RANGE):
             self.SIZE_RANGE = SIZE_RANGE
@@ -815,10 +841,10 @@ class RTS27_Table3:
             self.DAY_TIME_BAND = DAY_TIME_BAND
 
         def setMidMarketRate(self, MID_MARKET_RATE):
-            self.MID_MARKET_RATE = MID_MARKET_RATE
+            self.MID_MARKET_RATE = Decimal(MID_MARKET_RATE)
 
         def setMarkupAmount(self, MARKUP_AMOUNT):
-            self.MARKUP_AMOUNT = MARKUP_AMOUNT
+            self.MARKUP_AMOUNT = Decimal(MARKUP_AMOUNT)
 
         def setMarkUpUSD(self, MARKUP_USD):
             self.MARKUP_USD = MARKUP_USD
@@ -832,11 +858,13 @@ class RTS27_Table3:
             return time_in_est_without_day_light_davings.strftime('%Y-%m-%d %H:%M:%S')
 
         def getTimeOfExecutionInUTC(self):
-            time_of_execution = self.TRADE_DATE + " " +self.TIME_OF_EXECUTION
+            if (self.TIME_OF_EXECUTION!=""):
+                time_of_execution = self.TRADE_DATE + " " +self.TIME_OF_EXECUTION
+                time_in_utc = datetime.strptime(time_of_execution, "%Y-%m-%d %H:%M:%S")
+                return time_in_utc.strftime('%Y-%m-%d %H:%M:%S')
 
-            time_in_utc = datetime.strptime(time_of_execution, "%Y-%m-%d %H:%M:%S")
-
-            return time_in_utc.strftime('%Y-%m-%d %H:%M:%S')
+        def setTCAPerformed(self):
+                self.TCA_PERFORMED = 1
 
         # Table 3 - Get attr array fx
         def getAttrArrayTable(self):
@@ -847,10 +875,14 @@ class RTS27_Table3:
                 self.ISIN,
                 self.TRADE_DATE,
                 self.INSTRUMENT_NAME,
+                self.CURRENCY_PAIR,
                 self.CURRENCY,
+                self.TENOR_DAYS,
                 self.SIMPLE_AVERAGE_EXECUTED_PRICE,
                 self.TOTAL_VALUE_EXECUTED,
+                self.TCA_PERFORMED,
                 self.PRICE,
+                self.CONVERTED_PRICE,
                 self.getTimeOfExecutionInUTC(),
                 self.TRANSACTION_SIZE,
                 self.TRADING_SYSTEM,
@@ -858,6 +890,7 @@ class RTS27_Table3:
                 self.TRADING_PLATFORM,
                 self.BEST_BID_OFFER_OR_SUITABLE_REFERENCE,
                 self.MID_MARKET_RATE,
+                self.ABS_PRICE_DIFF,
                 self.MARKUP_AMOUNT,
                 self.MARKUP_USD
             ]
