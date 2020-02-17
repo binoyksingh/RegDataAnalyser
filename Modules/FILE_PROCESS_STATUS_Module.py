@@ -4,7 +4,7 @@ import sys
 
 class File_Process_Status:
 
-    # Define list of attributes
+    # Define list of attributez
     FILE_NAME=""
     FILE_TYPE=""
     FILE_STATUS=""
