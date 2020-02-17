@@ -1,0 +1,16 @@
+runtime: php
+env: flex
+runtime_config:
+    document_root: .
+env_variables:
+    APP_LOG: errorlog
+    GOOGLE_STORAGE_BUCKET: "mifid-data-analyser.appspot.com"
+    MYSQL_USER: "root"
+    MYSQL_PASSWORD: "root"
+    MYSQL_DSN: "mysql:dbname=mifid;unix_socket=/cloudsql/mifid-data-analyser:us-central1:mifid-data-analyser"
+beta_settings:
+    cloud_sql_instances: "mifid-data-analyser:us-central1:mifid-data-analyser"
+handlers:
+# Serve your app through a front controller at index.php or public/index.php.
+- url: .*
+  script: index.php
