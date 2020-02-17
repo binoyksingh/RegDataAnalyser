@@ -7,8 +7,9 @@ from datetime import datetime
 import concurrent.futures
 
 from Modules import FIRDS_Data_Module
+from Modules import FILE_PROCESS_STATUS_Module
 from Modules_DB_Writers import FIRDS_DB_Writer_Module
-
+from Modules_DB_Writers import FILE_PROCESS_STATUS_DB_Writer_Module
 
 def processFinancialInstrument (publish_date, filename, buffer,db_writer) :
     #headerXML = ET.fromstring(buffer)
@@ -69,53 +70,79 @@ def processFinancialInstrument (publish_date, filename, buffer,db_writer) :
     db_writer.Write_Data(firds_data_rec)
 
 def process_zip_file(zipfilename):
+    # Check if ZIP file is already processed.
+
     print ("Processing file " + zipfilename)
+
     firds_db_writer = FIRDS_DB_Writer_Module.FIRDS_DB_Writer()
-    firdsxmlfilenames = []
+    file_process_status_writer = FILE_PROCESS_STATUS_DB_Writer_Module.FILE_PROCESS_STATUS_DB_Writer()
 
+    file_status = file_process_status_writer.getFileProcessStatus(os.path.basename(zipfilename))
+    print ("after getFilePorcessStatys , file_status is " + file_status)
 
-    #print ("Processing file " + zipfilename + ", Percentage Complete : " + str(
-    #    round((float(fileId) / float(len(firdszipfilenames)) * 100), 2)) + "%")
-    # xml_file =  codecs.open(filename, 'r',encoding='utf-8')
-    zipfileObj = zipfile.ZipFile(zipfilename)
-    zipfileObj.extractall(os.path.dirname(zipfilename))
-    for zip_content_name in zipfileObj.namelist():
-        file_name_full_path = os.path.dirname(zipfilename)+"/"+ zip_content_name
-        firdsxmlfilenames.append(file_name_full_path)
-        print "Adding file " + file_name_full_path
-    zipfileObj.close()
+    if (file_status==""): # Meaning the file was not processed before, we should go ahead and process the file.
 
-    #for root, dirnames, filenames in os.walk(firds_source_path):
-    #    for xmlfilename in fnmatch.filter(filenames, '*.xml'):
-    #        firdsxmlfilenames.append(os.path.join(root, xmlfilename))
+        firdsxmlfilenames = []
+        file_proc_status = FILE_PROCESS_STATUS_Module.File_Process_Status()
+        file_proc_status.setFileName(os.path.basename(zipfilename))
+        file_proc_status.setFileStatus("STARTED")
+        file_proc_status.setFileType("FIRDS")
+        #start_time_obj = datetime.strptime(str(datetime.now()), '%Y.%m.%d %H:%M:%S')
+        file_proc_status.setStartTime(datetime.now())
+        print "File Start Time" + str(file_proc_status.START_TIME)
 
-    for xmlfilename in firdsxmlfilenames:
+        #print ("Processing file " + zipfilename + ", Percentage Complete : " + str(
+        #    round((float(fileId) / float(len(firdszipfilenames)) * 100), 2)) + "%")
+        # xml_file =  codecs.open(filename, 'r',encoding='utf-8')
+        zipfileObj = zipfile.ZipFile(zipfilename)
+        zipfileObj.extractall(os.path.dirname(zipfilename))
+        for zip_content_name in zipfileObj.namelist():
+            file_name_full_path = os.path.dirname(zipfilename)+"/"+ zip_content_name
+            firdsxmlfilenames.append(file_name_full_path)
+            print "Processing XML file " + file_name_full_path
+        zipfileObj.close()
 
-        esma_publish_date = xmlfilename.split("_")[1]
-        with open(xmlfilename) as inputfile:
-            append = False
-            financial_instrument_count = 0
-            inputbuffer = ""
-            for chunk in read_in_chunks(inputfile):
-                inputbuffer += chunk
-                fin_Instr_start_loc = inputbuffer.find("<FinInstrm>")
-                fin_Instr_end_loc = inputbuffer.find("</FinInstrm>")
+        #for root, dirnames, filenames in os.walk(firds_source_path):
+        #    for xmlfilename in fnmatch.filter(filenames, '*.xml'):
+        #        firdsxmlfilenames.append(os.path.join(root, xmlfilename))
 
-                # Check if there is completion of an element here
-                if (fin_Instr_end_loc != -1 and fin_Instr_start_loc != -1):
-                    # Im assuming that if there is an end tag there will be a beginning tag also
-                    finInstr_string = inputbuffer[fin_Instr_start_loc:fin_Instr_end_loc + len("</FinInstrm>")]
-                    processFinancialInstrument(esma_publish_date, os.path.basename(xmlfilename), finInstr_string,
-                                               firds_db_writer)
+        for xmlfilename in firdsxmlfilenames:
 
-                    append = False
-                    tempbuffer = inputbuffer[fin_Instr_end_loc + len("</FinInstrm>"):len(inputbuffer)]
-                    inputbuffer = tempbuffer
-                    financial_instrument_count += 1
+            esma_publish_date = xmlfilename.split("_")[1]
+            with open(xmlfilename) as inputfile:
+                append = False
+                financial_instrument_count = 0
+                inputbuffer = ""
+                for chunk in read_in_chunks(inputfile):
+                    inputbuffer += chunk
+                    fin_Instr_start_loc = inputbuffer.find("<FinInstrm>")
+                    fin_Instr_end_loc = inputbuffer.find("</FinInstrm>")
 
-        # zip up the file again
-        os.remove(xmlfilename)
+                    # Check if there is completion of an element here
+                    if (fin_Instr_end_loc != -1 and fin_Instr_start_loc != -1):
+                        # Im assuming that if there is an end tag there will be a beginning tag also
+                        finInstr_string = inputbuffer[fin_Instr_start_loc:fin_Instr_end_loc + len("</FinInstrm>")]
+                        processFinancialInstrument(esma_publish_date, os.path.basename(xmlfilename), finInstr_string,
+                                                   firds_db_writer)
 
+                        append = False
+                        tempbuffer = inputbuffer[fin_Instr_end_loc + len("</FinInstrm>"):len(inputbuffer)]
+                        inputbuffer = tempbuffer
+                        financial_instrument_count += 1
+
+            # zip up the file again
+            os.remove(xmlfilename)
+            # Mark as File processes
+            # finish_time_obj = datetime.strptime(str(datetime.now()), '%Y.%m.%d %H:%M:%S')
+            file_proc_status.setFinishedTime(datetime.now())
+            file_proc_status.setFileStatus("COMPLETED")
+            print "File END Time" + str(file_proc_status.FINISHED_TIME)
+            file_process_status_writer.Write_Data(file_proc_status)
+
+    elif (file_status=="STARTED"):
+        # Then we need to take some action to delete the previous records and complete
+        # May manual for now, let's do this later.
+        print ("file was started but not completed")
 
 
 def read_in_chunks(f, size=256):
@@ -133,7 +160,7 @@ def find_between( s, first, last ):
     except ValueError:
         return ""
 
-firds_source_path = "/Users/sarthakagarwal/PycharmProjects/FIRDSData"
+firds_source_path = "/Users/sarthakagarwal/PycharmProjects/FIRDSData/Q2_2018_TILL_Q3_2019/11_2018"
 fileId = 0
 # Create a pool of processes. By default, one is created for each CPU in your machine.
 with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -147,6 +174,6 @@ with concurrent.futures.ProcessPoolExecutor() as executor:
 
     # Process the list of files, but split the work across the process pool to use all CPUs!
     for zip_file  in zip(firdszipfilenames, executor.map(process_zip_file, firdszipfilenames)):
-        print("zipfile {zip_file} was processed")
+        print("zipfile was processed")
 
     #firdszipfilenames = firdszipfilenames[0:5]
