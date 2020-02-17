@@ -1,0 +1,10 @@
+use mifid;
+DROP TABLE FILE_PROCESS_STATUS;
+CREATE TABLE FILE_PROCESS_STATUS (
+    ENTRY_ID INT NOT NULL AUTO_INCREMENT primary key,
+    FILE_NAME varchar(255) unique,
+    FILE_TYPE varchar(255),
+    FILE_STATUS varchar(255),
+    START_TIMESTAMP timestamp default CURRENT_TIMESTAMP(),
+    FINISH_TIMESTAMP timestamp default CURRENT_TIMESTAMP()
+);
