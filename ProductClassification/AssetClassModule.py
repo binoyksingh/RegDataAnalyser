@@ -9,6 +9,7 @@ Created on Tue Aug 21 21:31:35 2018
 from enum import Enum
 
 class AssetClass(Enum):
+
     UNCLASSIFIED = 1
     BLANK_AT_SOURCE = 2
     EQUITY = 3
@@ -20,12 +21,13 @@ class AssetClass(Enum):
     CREDIT = 9
     COMMODITY = 10
 
+    @classmethod
     def getDesc(assetclass):
 
-        # Type checking
+        '''# Type checking
         if not isinstance(assetclass, AssetClass):
             raise TypeError('AssetClass not recongnised')
-
+        '''
         if (assetclass == AssetClass.UNCLASSIFIED):
             return "Unclassified"
 
@@ -55,3 +57,8 @@ class AssetClass(Enum):
 
         if (assetclass == AssetClass.COMMODITY):
             return "Commodity"
+
+
+
+print(2+3)
+

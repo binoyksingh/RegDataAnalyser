@@ -7,7 +7,7 @@ import re
 from datetime import datetime
 from decimal import Decimal
 from datetime import datetime, timedelta
-from  ProductClassification import AssetClassModule
+from ProductClassification import AssetClassModule
 
 class RTS27_Table2:
 
@@ -38,7 +38,7 @@ class RTS27_Table2:
 
     # ISDA Codes
     ISDA_ASSET_CLASS_ID = AssetClassModule.AssetClass.UNCLASSIFIED     ### 1 - stands for Unclassified
-    ISDA_ASSET_CLASS_DESC = AssetClassModule.AssetClass.getDesc(AssetClassModule.AssetClass.UNCLASSIFIED)   ## Default should be UNCLASSIFIED
+    ISDA_ASSET_CLASS_DESC = AssetClassModule.AssetClass.getDesc()   ## Default should be UNCLASSIFIED
 
     ccy_list_static = "(AFN|EUR|DZD|USD|AOA|XCD|ARS|AMD|AWG|AUD|AZN|BSD|BHD|BDT|BBD|BYN|BZD|XOF|BMD|INR|BTN|BOB|BOV|BAM|BWP|NOK|BRL|BND|BGN|BIF|CVE|KHR|XAF|CAD|KYD|CLP|CLF|CNY|COP|COU|KMF|CDF|NZD|CRC|HRK|CUP|CUC|ANG|CZK|DKK|DJF|DOP|EGP|SVC|ERN|ETB|FKP|FJD|XPF|GMD|GEL|GHS|GIP|GTQ|GBP|GNF|GYD|HTG|HNL|HKD|HUF|ISK|IDR|XDR|IRR|IQD|ILS|JMD|JPY|JOD|KZT|KES|KPW|KRW|KWD|KGS|LAK|LBP|LSL|ZAR|LRD|LYD|CHF|MOP|MKD|MGA|MWK|MYR|MVR|MRU|MUR|XUA|MXN|MXV|MDL|MNT|MAD|MZN|MMK|NAD|NPR|NIO|NGN|OMR|PKR|PAB|PGK|PYG|PEN|PHP|PLN|QAR|RON|RUB|RWF|SHP|WST|STN|SAR|RSD|SCR|SLL|SGD|XSU|SBD|SOS|SSP|LKR|SDG|SRD|SZL|SEK|CHE|CHW|SYP|TWD|TJS|TZS|THB|TOP|TTD|TND|TRY|TMT|UGX|UAH|AED|USN|UYU|UYI|UYW|UZS|VUV|VES|VND|YER|ZMW|ZWL|XBA|XBB|XBC|XBD|XTS|XAU|XPD|XPT|XAG)"
 
@@ -106,6 +106,7 @@ class RTS27_Table2:
                 try:
                     rawdate = datetime.strptime(val_date.strip(), '%Y%m%d')
                     self.VALUE_DATE = datetime.strftime(rawdate, "%Y-%m-%d")
+                    print(self.TRADE_DATE)
                     self.TENOR = self.getTenor(self.TRADE_DATE, self.VALUE_DATE)
 
                 except ValueError:
@@ -116,7 +117,8 @@ class RTS27_Table2:
             self.INSTRUMENT_CLASSIFICATION = INSTRUMENT_CLASSIFICATION.upper()
 
             self.ISDA_ASSET_CLASS_ID = self.getAssetClassEnum(self.cfi_assetclass_map)
-            self.ISDA_ASSET_CLASS_DESC = AssetClassModule.AssetClass.getDesc(self.ISDA_ASSET_CLASS_ID)
+            print(self.ISDA_ASSET_CLASS_ID)
+            #self.ISDA_ASSET_CLASS_DESC = AssetClassModule.AssetClass.getDesc(self.ISDA_ASSET_CLASS_ID)
 
             cfi_group = (self.INSTRUMENT_CLASSIFICATION[:2]).upper()
             if (self.INSTRUMENT_CLASSIFICATION!="" and self.INSTRUMENT_CLASSIFICATION!=' '):
@@ -138,8 +140,14 @@ class RTS27_Table2:
 
     def getTenor(self,  TRADE_DATE, VALUE_DATE):
         tenor = ""
+        #print TRADE_DATE.date
+        #print(type(TRADE_DATE.date()))
+        print (type(VALUE_DATE))
+        print(datetime.strptime(VALUE_DATE, "%Y-%m-%d"))
+        print(TRADE_DATE)
         if (TRADE_DATE!="" and VALUE_DATE!=""):
-            days_diff = datetime.strptime(VALUE_DATE, "%Y-%m-%d") - datetime.strptime(TRADE_DATE, "%Y-%m-%d")
+            days_diff = datetime.strptime(VALUE_DATE, "%Y-%m-%d") - TRADE_DATE
+                        #datetime.strptime(TRADE_DATE,"%Y-%m-%d")
 
             if ((days_diff.days >= 0) and (days_diff.days < 2)):
                 tenor = "O/N"
@@ -197,7 +205,7 @@ class RTS27_Table2:
     def getAttrArray(self):
         single_record_array = [self.SOURCE_COMPANY_NAME, self.FILENAME, self.FILE_ID, self.ISIN, self.TRADE_DATE,
                                        self.VENUE, self.INSTRUMENT_NAME, self.INSTRUMENT_CLASSIFICATION, self.CURRENCY,
-                                        str(self.ISDA_ASSET_CLASS_ID.value), self.ISDA_ASSET_CLASS_DESC, self.CFI_ATTR_1_DESC,
+                                        str(self.ISDA_ASSET_CLASS_ID), self.ISDA_ASSET_CLASS_DESC, self.CFI_ATTR_1_DESC,
                                         self.CFI_ATTR_2_DESC,self.CFI_ATTR_3_DESC, self.CFI_ATTR_4_DESC,
                                         self.CFI_ATTR_5_DESC, self.CFI_ATTR_6_DESC, self.CCY1, self.CCY2, self.CCY_PAIR,
                                         self.VALUE_DATE, self.TENOR]
@@ -229,7 +237,27 @@ class RTS27_Table2:
             asset_class_desc = cfi_assetclass_map.get(cfi_group)
             if (asset_class_desc!=None):
                 asset_class_id = (int)(asset_class_desc[2])
-                return AssetClassModule.AssetClass(asset_class_id)
+                print('hello hello.......'+str(asset_class_id))
+                if(asset_class_id==4):
+                    return '4'
+                if (asset_class_id == 3):
+                    return '3'
+                if (asset_class_id == 2):
+                    return '2'
+                if (asset_class_id == 1):
+                    return '1'
+                if (asset_class_id == 5):
+                    return '5'
+                if (asset_class_id == 6):
+                    return '6'
+                if (asset_class_id == 7):
+                    return '7'
+                if (asset_class_id == 8):
+                    return '8'
+                if (asset_class_id == 9):
+                    return '9'
+                if (asset_class_id == 10):
+                    return '10'
             else :
                 return AssetClassModule.AssetClass.UNCLASSIFIED
         else:

@@ -137,6 +137,8 @@ class RTS27_DB_Writer:
                                           " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s )"
 
         #self.cursor.execute(insert_rts27__table2_sql_string, (publishing_firm_name, filename, fileIdString, table2_isin, table2_dateofthetradingday, table2_venue, table2_instrumentname, table2_instrumentclassification,table2_currency))
+        print(insert_rts27__table2_sql_string)
+        print(batch)
         self.cursor.executemany(insert_rts27__table2_sql_string, batch)
         self.connection.commit()
         return;
@@ -150,7 +152,7 @@ class RTS27_DB_Writer:
                                           "`TRADING_SYSTEM`,`TRADING_MODE`,`TRADING_PLATFORM`,`BEST_BID_OFFER_OR_SUITABLE_REFERENCE`,`MID_MARKET_RATE`," \
                                           "`ABS_PRICE_DIFF`,`MARKUP_AMOUNT`,`MARKUP_USD`) " \
                                           " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-
+        print(batch)
         self.cursor.executemany(insert_rts27__table3_sql_string, batch)
         self.connection.commit()
         return;
@@ -210,8 +212,11 @@ class RTS27_DB_Writer:
         if (len(self.list_of_table1_records) == self.BATCH_SIZE):
             # Insert Batch
             batch = []
+            print('i m here ........')
             for rec in self.list_of_table1_records:
+                print(rec.getAttrArrayTable1())
                 batch.append(rec.getAttrArrayTable1())
+
             self.Write_to_Table1_DB(batch)
             self.list_of_table1_records = []
 
@@ -223,6 +228,12 @@ class RTS27_DB_Writer:
                                           "`FAILED_TRANSACTIONS_PERCENT`,`FILENAME`,`FILE_ID`," \
                                           "`ISIN`,`INSTRUMENT_NAME`,`INSTRUMENT_CLASSIFICATION`,`CURRENCY`) " \
                                           " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s )"
+        print(insert_rts27_table1_sql_string)
+        print(batch[10])
+        print(batch[20])
+        print(batch[71])
+        print(batch[72])
+
         self.cursor.executemany(insert_rts27_table1_sql_string, batch)
         self.connection.commit()
         return;

@@ -10,6 +10,8 @@ from datetime import datetime
 
 from openpyxl import load_workbook
 from Modules import RTS27_Table_Records_Module
+from ProductClassification import AssetClassModule
+
 from Modules_DB_Readers import RTS27_Prod_Class_DB_Reader_Module
 from Modules_DB_Readers import HistMktData_DB_Reader_Module
 from Modules_DB_Writers import RTS27_DB_Writer_Module
@@ -24,14 +26,16 @@ from Modules import RTS27_LEI_Company_Map_Module
 # CCY
 #
 
-hsbc_source_path = "/Users/sarthakagarwal/PycharmProjects/MifidDataAnalyser/Source/HSBC"
+#hsbc_source_path = "/Users/sarthakagarwal/PycharmProjects/MifidDataAnalyser/Source/HSBC"
+hsbc_source_path = "/Users/binoyksingh/PycharmProjects/RegDataAnalyser/Source/HSBC"
+
 rts_db_rd = RTS27_Prod_Class_DB_Reader_Module.RTS27_Prod_Class_DB_Reader()
 rtsdb = RTS27_DB_Writer_Module.RTS27_DB_Writer()
 histdata_db_reader = HistMktData_DB_Reader_Module.HistMktData_DB_Reader()
 
 hsbcfilenames = sorted(glob.glob(hsbc_source_path+'/*.csv'))
 
-table_switches = RTS27_Utilities.RTS27_TableSwitches("N", "N", "Y", "N", "N") #Table 1, Table 2, Table 3, Table 4, Table 6
+table_switches = RTS27_Utilities.RTS27_TableSwitches("N", "Y", "N", "N", "N") #Table 1, Table 2, Table 3, Table 4, Table 6
 
 
 #filenames = filenames[0:len(filenames)
@@ -93,18 +97,18 @@ with open('HSBC_RTS27_TxResults.csv', 'w') as writeFile:
                     if (rowCount > 1) :
 
                         # Printing output of Table 2
-                        table2_rec = RTS27_Table_Records_Module.RTS27_Table2(rts_db_rd.getCfi_assetclass_map(),rts_db_rd.getCfi_char_map())
+                        table2_rec = RTS27_Table_Records_Module.RTS27_Table2(rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
                         table2_rec.setSourceCompanyName(source_company_name)
                         table2_rec.setFileName(os.path.basename(filename))
-                        rawdate = datetime.strptime(row[0], '%d/%m/%Y')
-                        formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
+                        rawdate = datetime.strptime(row[0], '%Y-%m-%d')
+                        formatted_date = rawdate
                         table2_rec.setTradeDate(formatted_date)
                         table2_rec.setInstrumentName(str(row[1]).decode('ascii', errors='ignore'))
                         table2_rec.setISIN(row[2])
                         table2_rec.setInstrumentClassification(row[4])
                         table2_rec.setCurrency(row[5])
                         table2_rec.setVenue("") # Since HSBC does not provide this Info...
-                        table2_rec.setFileId(source_company_name+"_"+table2_rec.TRADE_DATE+"_"+table2_rec.ISIN+"_"+table2_rec.CURRENCY )
+                        table2_rec.setFileId(source_company_name+"_"+str(formatted_date.date())+"_"+table2_rec.CURRENCY )
 
                         # Writing output of Table 2
                         rtsdb.Write_to_Table2(table2_rec)
@@ -118,8 +122,9 @@ with open('HSBC_RTS27_TxResults.csv', 'w') as writeFile:
                     if (rowCount > 1) :
                         # -----------------------------------------------------------
                         # Building Table 4
-                        rawdate = datetime.strptime(row[0], '%d/%m/%Y')
+                        rawdate = datetime.strptime(row[0], '%Y-%m-%d')
                         formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
+                        #formatted_date=rawdate
                         table4_rec_new = RTS27_Table_Records_Module.RTS27_Table4()
                         table4_rec_new.SOURCE_COMPANY_NAME = source_company_name
                         table4_rec_new.FILENAME = os.path.basename(filename)
@@ -129,11 +134,27 @@ with open('HSBC_RTS27_TxResults.csv', 'w') as writeFile:
                         table4_rec_new.CURRENCY = row[3]
 
                         table4_rec_new.setSimpleAverageTransactionPrice(str(row[4]))
-                        table4_rec_new.VOLUME_WEIGHTED_TRANSACTION_PRICE = str(row[5])
-                        table4_rec_new.HIGHEST_EXECUTED_PRICE = str(row[6])
-                        table4_rec_new.LOWEST_EXECUTED_PRICE = str(row[7])
+                        if(row[5] != 'N/A'):
+                            table4_rec_new.VOLUME_WEIGHTED_TRANSACTION_PRICE = str(row[5])
+                        else:
+                            table4_rec_new.VOLUME_WEIGHTED_TRANSACTION_PRICE = 0.00
 
-                        table4_rec_new.setFileId(source_company_name+"_"+table4_rec_new.TRADE_DATE+"_"+table4_rec_new.ISIN+"_"+table4_rec_new.CURRENCY )
+                        if (row[6] != 'N/A'):
+                            table4_rec_new.HIGHEST_EXECUTED_PRICE = str(row[6])
+                        else:
+                            table4_rec_new.HIGHEST_EXECUTED_PRICE = 0.00
+
+
+
+
+                        if (row[7] != 'N/A'):
+                            table4_rec_new.LOWEST_EXECUTED_PRICE = str(row[7])
+                        else:
+                            table4_rec_new.LOWEST_EXECUTED_PRICE = 0.00
+
+
+
+                        table4_rec_new.setFileId(source_company_name+"_"+str(table4_rec_new.TRADE_DATE)+"_"+table4_rec_new.CURRENCY )
 
 
                         # print table4_rec_new.getAttrArray()
@@ -151,8 +172,9 @@ with open('HSBC_RTS27_TxResults.csv', 'w') as writeFile:
                         table6_rec = RTS27_Table_Records_Module.RTS27_Table6()
 
 
-                        rawdate = datetime.strptime(row[0], '%d/%m/%Y')
-                        formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
+                        rawdate = datetime.strptime(row[0], '%Y-%m-%d')
+                        #formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
+                        formatted_date =rawdate
                         table6_rec.setSourceCompanyName(source_company_name)
                         table6_rec.setFileName(os.path.basename(filename))
                         table6_rec.setTradeDate(formatted_date)
@@ -168,7 +190,8 @@ with open('HSBC_RTS27_TxResults.csv', 'w') as writeFile:
                         table6_rec.setMedianSizeOfAllOrdersOrRequestsForQuote(row[10])
                         table6_rec.setNumberOfDesignatedMarketMaker(row[11])
 
-                        table6_rec.setFileId(source_company_name+"_"+table6_rec.TRADE_DATE+"_"+table6_rec.ISIN+"_"+table6_rec.CURRENCY)
+                        table6_rec.setFileId(source_company_name+"_"+str(table6_rec.TRADE_DATE)+"_"+table6_rec.CURRENCY)
+                        rtsdb.Write_to_Table6(table6_rec)
 
             if (("table3.csv" in str(filename)) and (table_switches.PROCESS_TABLE_3 == "Y")):
                 print "Processing Table 3"
@@ -181,9 +204,9 @@ with open('HSBC_RTS27_TxResults.csv', 'w') as writeFile:
                         # Populate Table 3 properties
                         table3_rec_new = RTS27_Table_Records_Module.RTS27_Table3()
                         #  Table 2 Is just being created as a Helper Object to help extract the Currency Pair, Value Dates etc.
-                        table2_rec = RTS27_Table_Records_Module.RTS27_Table2(rts_db_rd.getCfi_assetclass_map(),rts_db_rd.getCfi_char_map())
+                        table2_rec = RTS27_Table_Records_Module.RTS27_Table2(rts_db_rd.getCfi_assetclass_map(), rts_db_rd.getCfi_char_map())
 
-                        rawdate = datetime.strptime(row[0], '%d/%m/%Y')
+                        rawdate = datetime.strptime(row[0], "%Y-%m-%d")
                         formatted_date = datetime.strftime(rawdate, "%Y-%m-%d")
 
                         table3_rec_new.setInstrumentName(str(row[1]).decode('ascii', errors='ignore'))
@@ -226,7 +249,7 @@ with open('HSBC_RTS27_TxResults.csv', 'w') as writeFile:
                                                                                                       table3_rec_new.getTimeOfExecutionInESTWithoutDayLightSavings(),
                                                                                                       tenor_days)
                             table3_rec_new.setFileId(
-                                source_company_name + "_" + table3_rec_new.TRADE_DATE + "_" + table3_rec_new.ISIN + "_" + table3_rec_new.CURRENCY)
+                                source_company_name + "_" + table3_rec_new.TRADE_DATE + "_" + table3_rec_new.CURRENCY)
 
                             if (fx_mid_price_for_ccy_tenor != 0):
 
