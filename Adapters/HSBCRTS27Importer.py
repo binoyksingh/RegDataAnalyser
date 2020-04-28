@@ -25,7 +25,7 @@ from Modules import RTS27_LEI_Company_Map_Module
 # Trade Date
 # CCY
 #
-
+#BINOY
 #hsbc_source_path = "/Users/sarthakagarwal/PycharmProjects/MifidDataAnalyser/Source/HSBC"
 hsbc_source_path = "/Users/binoyksingh/PycharmProjects/RegDataAnalyser/Source/HSBC"
 
